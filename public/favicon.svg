@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Metallic Gold Gradients matching Logo-Beauty-Lab.jpg -->
+    <linearGradient id="goldBrushRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8db" />
+      <stop offset="15%" stop-color="#f5e19f" />
+      <stop offset="35%" stop-color="#d4af37" />
+      <stop offset="55%" stop-color="#8a6714" />
+      <stop offset="75%" stop-color="#fdf1cd" />
+      <stop offset="90%" stop-color="#caa035" />
+      <stop offset="100%" stop-color="#8a6714" />
+    </linearGradient>
+
+    <linearGradient id="goldLotus" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#aa8421" />
+      <stop offset="30%" stop-color="#f7e5aa" />
+      <stop offset="70%" stop-color="#d4af37" />
+      <stop offset="100%" stop-color="#fffbe8" />
+    </linearGradient>
+
+    <linearGradient id="goldScript" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="20%" stop-color="#faecc1" />
+      <stop offset="50%" stop-color="#d4af37" />
+      <stop offset="80%" stop-color="#99781b" />
+      <stop offset="100%" stop-color="#eed06f" />
+    </linearGradient>
+
+    <filter id="goldGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="#d4af37" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Deep Black Circular Background strictly within bounds -->
+  <circle cx="256" cy="256" r="250" fill="#000000" />
+
+  <g filter="url(#goldGlow)">
+    <!-- Outer Stylized Brushed Gold Ring with generous margin so nothing clips -->
+    <!-- Main thick brush swirl (r=200 leaves 56px padding to outer border) -->
+    <circle cx="256" cy="256" r="198" fill="none" stroke="url(#goldBrushRing)" stroke-width="16" stroke-linecap="round" stroke-dasharray="1180 50" />
+    
+    <!-- Outer secondary dynamic brush lines (within r=212) -->
+    <path d="M 270 48 A 210 210 0 0 1 462 290" fill="none" stroke="url(#goldBrushRing)" stroke-width="5" stroke-linecap="round" opacity="0.85" />
+    <path d="M 445 315 A 206 206 0 0 1 125 450" fill="none" stroke="url(#goldBrushRing)" stroke-width="7" stroke-linecap="round" opacity="0.9" />
+    <path d="M 105 430 A 208 208 0 0 1 60 170" fill="none" stroke="url(#goldBrushRing)" stroke-width="4.5" stroke-linecap="round" opacity="0.8" />
+    
+    <!-- Inner concentric fine gold accent line -->
+    <circle cx="256" cy="256" r="184" fill="none" stroke="url(#goldBrushRing)" stroke-width="2.5" opacity="0.65" />
+
+    <!-- Stylized 5-Petal Gold Lotus Flower on the Left (x: 95-185, y: 190-265) -->
+    <g transform="translate(94, 182) scale(0.92)">
+      <!-- Central vertical petal -->
+      <path d="M 50 10 C 38 42, 40 85, 50 96 C 60 85, 62 42, 50 10 Z" fill="none" stroke="url(#goldLotus)" stroke-width="4.8" stroke-linejoin="round" />
+      <!-- Inner-left petal -->
+      <path d="M 45 35 C 24 45, 18 76, 42 94 C 47 88, 46 65, 45 35 Z" fill="none" stroke="url(#goldLotus)" stroke-width="4.5" stroke-linejoin="round" />
+      <!-- Inner-right petal -->
+      <path d="M 55 35 C 76 45, 82 76, 58 94 C 53 88, 54 65, 55 35 Z" fill="none" stroke="url(#goldLotus)" stroke-width="4.5" stroke-linejoin="round" />
+      <!-- Outer-left horizontal wing petal -->
+      <path d="M 36 60 C 10 65, 2 85, 26 95 C 37 95, 40 88, 36 60 Z" fill="none" stroke="url(#goldLotus)" stroke-width="4" stroke-linejoin="round" />
+      <!-- Outer-right horizontal wing petal -->
+      <path d="M 64 60 C 90 65, 98 85, 74 95 C 63 95, 60 88, 64 60 Z" fill="none" stroke="url(#goldLotus)" stroke-width="4" stroke-linejoin="round" />
+      <!-- Base connecting curve -->
+      <path d="M 24 95 Q 50 102 76 95" fill="none" stroke="url(#goldLotus)" stroke-width="4.2" stroke-linecap="round" />
+    </g>
+
+    <!-- Cursive 'Jilly' Script Calligraphy (comfortably placed between x=200 and x=400) -->
+    <text x="210" y="260" font-family="'Cormorant Garamond', 'Playfair Display', Georgia, serif" font-size="110" font-style="italic" font-weight="bold" fill="url(#goldScript)" letter-spacing="-1">
+      Jilly
+    </text>
+
+    <!-- Center Subtitle: BEAUTY LAB CENTER (well within horizontal circle width of 360px) -->
+    <text x="256" y="328" text-anchor="middle" font-family="'Cinzel', Georgia, serif" font-size="21" font-weight="700" fill="url(#goldBrushRing)" letter-spacing="6">
+      BEAUTY LAB CENTER
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+{
+  "name": "Jilly Beauty Lab - Gestión de Spa & Estética",
+  "description": "Sistema profesional de gestión para spa y centro estético: control de citas, inventario y stock, caja de cobros, personal con credenciales y reportes financieros mensuales.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
