@@ -76,7 +76,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onNewAppointmentClick })
                     ? 'bg-[#d4af37]/15 text-[#e5c158] border border-[#d4af37]/40 shadow-sm'
                     : 'text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#18181e] border border-transparent'
                 } ${!hasAccess ? 'opacity-65 hover:opacity-90' : ''}`}
-                title={!hasAccess ? `Panel no habilitado para @${currentUser.username}` : item.label}
+                title={!hasAccess ? 'Módulo restringido para este perfil' : item.label}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-[#d4af37]' : (!hasAccess ? 'text-zinc-600' : 'text-[#71717a]')}`} />
                 <span>{item.label}</span>

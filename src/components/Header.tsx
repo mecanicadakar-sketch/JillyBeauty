@@ -165,7 +165,10 @@ export const Header: React.FC = () => {
                       <p className="text-xs text-[#71717a]">Conectado como:</p>
                       <p className="text-sm font-semibold text-[#d4af37]">{currentUser.name}</p>
                       <p className="text-xs text-[#a1a1aa]">{currentUser.specialty}</p>
-                      <p className="text-[11px] text-[#71717a] mt-0.5">Usuario: <span className="font-mono text-zinc-300">@{currentUser.username}</span></p>
+                      <p className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        Sesión Verificada
+                      </p>
                     </div>
 
                     <div className="py-1">

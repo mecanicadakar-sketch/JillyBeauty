@@ -285,44 +285,46 @@ export const POSCashierView: React.FC = () => {
         </div>
 
         {/* Cash Drawer Metrics & Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="px-3 py-1.5 rounded-xl bg-[#18181d] border border-[#27272a] text-xs">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          <div className="px-3 py-2 rounded-xl bg-[#18181d] border border-[#27272a] text-xs">
             <span className="text-zinc-400 block text-[10px]">Efectivo en Gaveta</span>
-            <span className="font-bold text-[#d4af37] text-sm">
+            <span className="font-bold text-[#d4af37] text-sm font-mono">
               ${expectedCashInDrawer.toFixed(2)}
             </span>
           </div>
 
-          <div className="px-3 py-1.5 rounded-xl bg-[#18181d] border border-[#27272a] text-xs">
+          <div className="px-3 py-2 rounded-xl bg-[#18181d] border border-[#27272a] text-xs">
             <span className="text-zinc-400 block text-[10px]">Tarjetas / Transferencias</span>
-            <span className="font-bold text-blue-400 text-sm">
+            <span className="font-bold text-blue-400 text-sm font-mono">
               ${(cashShift.cardSales + cashShift.transferSales).toFixed(2)}
             </span>
           </div>
 
           {cashShift.status === 'open' ? (
-            <>
+            <div className="col-span-2 sm:col-auto flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setShowExpenseModal(true)}
-                className="px-3 py-2 bg-[#1c1c24] hover:bg-[#252530] text-zinc-200 text-xs font-medium rounded-xl border border-[#2d2d38] transition-colors"
+                className="flex-1 sm:flex-none px-3 py-2 bg-[#1c1c24] hover:bg-[#252530] text-zinc-200 text-xs font-medium rounded-xl border border-[#2d2d38] transition-colors text-center"
               >
                 + Gasto de Caja
               </button>
 
               <button
                 onClick={() => setShowCloseModal(true)}
-                className="px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-xl border border-rose-500/30 transition-colors"
+                className="flex-1 sm:flex-none px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-xl border border-rose-500/30 transition-colors text-center"
               >
                 Cerrar Caja (Arqueo)
               </button>
-            </>
+            </div>
           ) : (
-            <button
-              onClick={() => setShowOpenModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-semibold text-xs rounded-xl hover:brightness-110 shadow-md transition-all"
-            >
-              Apertura de Caja
-            </button>
+            <div className="col-span-2 sm:col-auto w-full sm:w-auto">
+              <button
+                onClick={() => setShowOpenModal(true)}
+                className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-semibold text-xs rounded-xl hover:brightness-110 shadow-md transition-all text-center"
+              >
+                Apertura de Caja
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -893,10 +895,10 @@ export const POSCashierView: React.FC = () => {
                 className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-sm font-mono text-white focus:outline-none focus:border-[#d4af37]"
               />
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
               <button
                 onClick={() => setShowOpenModal(false)}
-                className="px-4 py-2 bg-[#1a1a20] rounded-xl text-xs text-zinc-300"
+                className="w-full sm:w-auto px-4 py-2 bg-[#1a1a20] rounded-xl text-xs text-zinc-300 text-center"
               >
                 Cancelar
               </button>
@@ -905,7 +907,7 @@ export const POSCashierView: React.FC = () => {
                   openCashShift(parseFloat(openingAmountInput) || 0);
                   setShowOpenModal(false);
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-semibold rounded-xl text-xs"
+                className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-semibold rounded-xl text-xs text-center"
               >
                 Abrir Caja
               </button>
@@ -948,10 +950,10 @@ export const POSCashierView: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
               <button
                 onClick={() => setShowExpenseModal(false)}
-                className="px-4 py-2 bg-[#1a1a20] rounded-xl text-xs text-zinc-300"
+                className="w-full sm:w-auto px-4 py-2 bg-[#1a1a20] rounded-xl text-xs text-zinc-300 text-center"
               >
                 Cancelar
               </button>
@@ -967,7 +969,7 @@ export const POSCashierView: React.FC = () => {
                     alert('Complete monto y justificación.');
                   }
                 }}
-                className="px-4 py-2 bg-rose-500/80 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs"
+                className="w-full sm:w-auto px-4 py-2 bg-rose-500/80 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs text-center"
               >
                 Registrar Gasto
               </button>
@@ -1015,10 +1017,10 @@ export const POSCashierView: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
               <button
                 onClick={() => setShowCloseModal(false)}
-                className="px-4 py-2 bg-[#1a1a20] rounded-xl text-xs text-zinc-300"
+                className="w-full sm:w-auto px-4 py-2 bg-[#1a1a20] rounded-xl text-xs text-zinc-300 text-center"
               >
                 Volver
               </button>
@@ -1028,7 +1030,7 @@ export const POSCashierView: React.FC = () => {
                   closeCashShift(counted);
                   setShowCloseModal(false);
                 }}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-xl text-xs"
+                className="w-full sm:w-auto px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-xl text-xs text-center"
               >
                 Confirmar y Cerrar Caja
               </button>

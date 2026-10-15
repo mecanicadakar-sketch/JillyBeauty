@@ -168,8 +168,9 @@ export const MobileDrawerMenu: React.FC<MobileDrawerMenuProps> = ({ onNewAppoint
                 <div className="text-[11px] text-[#e5c158] font-medium truncate">
                   {getRoleLabel(currentUser.role)} · {currentUser.specialty}
                 </div>
-                <div className="text-[10px] text-zinc-500 font-mono">
-                  @{currentUser.username}
+                <div className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Conectado</span>
                 </div>
               </div>
             </div>

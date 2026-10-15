@@ -331,20 +331,20 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ onClos
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#1a1a20] border border-[#27272a]"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#1a1a20] border border-[#27272a] text-center"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#e5c158] to-[#aa8421] text-black font-semibold text-xs hover:brightness-110 shadow-lg shadow-[#d4af37]/20 transition-all flex items-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#e5c158] to-[#aa8421] text-black font-semibold text-xs hover:brightness-110 shadow-lg shadow-[#d4af37]/20 transition-all flex items-center justify-center gap-2"
             >
               <Check className="w-4 h-4 stroke-[2.5]" />
-              Agendar Cita en Agenda
+              <span>Agendar Cita en Agenda</span>
             </button>
           </div>
         </form>

@@ -509,27 +509,14 @@ export const StaffAndUsersView: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Credentials & Access Info */}
-                    <div className="py-3 space-y-2 text-xs">
-                      <div className="p-2.5 bg-[#18181d] border border-[#27272a] rounded-xl space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-zinc-500">Usuario de inicio:</span>
-                          <span className="font-mono text-zinc-200 font-semibold">@{user.username}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-zinc-500">Contraseña:</span>
-                          <div className="flex items-center gap-1.5 font-mono text-zinc-200">
-                            <span>{isPasswordVisible ? (user.password || '******') : '••••••••'}</span>
-                            <button
-                              type="button"
-                              onClick={() => togglePasswordVisibility(user.id)}
-                              className="text-zinc-500 hover:text-zinc-300"
-                            >
-                              {isPasswordVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                            </button>
-                          </div>
-                        </div>
+                    {/* Security & Access Info */}
+                    <div className="py-2.5 space-y-2 text-xs">
+                      <div className="p-2.5 bg-[#18181d] border border-[#27272a] rounded-xl flex items-center justify-between text-[11px]">
+                        <span className="text-zinc-400">Credenciales:</span>
+                        <span className="text-zinc-300 font-medium flex items-center gap-1.5 font-mono">
+                          <Lock className="w-3 h-3 text-[#d4af37]" />
+                          •••••••• (Privada)
+                        </span>
                       </div>
 
                       <div className="flex items-center justify-between text-zinc-400 text-[11px]">
@@ -600,7 +587,7 @@ export const StaffAndUsersView: React.FC = () => {
                     <button
                       onClick={() => handleOpenEditStaff(user)}
                       className="px-2.5 py-1.5 rounded-lg bg-[#1c1c24] hover:bg-[#252530] text-[11px] text-zinc-200 border border-[#2d2d38] flex items-center gap-1 transition-colors"
-                      title="Editar rol, contraseña y paneles habilitados"
+                      title="Editar rol y paneles de acceso"
                     >
                       <Edit className="w-3 h-3 text-[#d4af37]" />
                       <span>Editar Rol & Paneles</span>
@@ -920,7 +907,7 @@ export const StaffAndUsersView: React.FC = () => {
                   <div>
                     <label className="block text-[10px] text-zinc-400 mb-1">Contraseña de Acceso *</label>
                     <input
-                      type="text"
+                      type="password"
                       required
                       placeholder="Ingrese clave"
                       value={staffPassword}
@@ -957,7 +944,7 @@ export const StaffAndUsersView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowAddStaffModal(false)}
@@ -987,7 +974,7 @@ export const StaffAndUsersView: React.FC = () => {
                   Editar Colaborador: {selectedStaffForEdit.name}
                 </h3>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  Actualice rol, privilegios de administrador, contraseña y servicios habilitados
+                  Actualice rol, privilegios de administrador y paneles habilitados
                 </p>
               </div>
               <button onClick={() => setShowEditStaffModal(false)} className="text-zinc-400 hover:text-white">
@@ -1168,7 +1155,7 @@ export const StaffAndUsersView: React.FC = () => {
               <div>
                 <label className="block text-[11px] text-zinc-300 mb-1">Contraseña de Acceso *</label>
                 <input
-                  type="text"
+                  type="password"
                   required
                   value={staffPassword}
                   onChange={(e) => setStaffPassword(e.target.value)}
@@ -1201,7 +1188,7 @@ export const StaffAndUsersView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowEditStaffModal(false)}
@@ -1293,7 +1280,7 @@ export const StaffAndUsersView: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowAddClientModal(false)}

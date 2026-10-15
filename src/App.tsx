@@ -73,7 +73,7 @@ const MainContent: React.FC = () => {
             </h3>
 
             <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
-              El colaborador <strong className="text-white">{currentUser.name}</strong> (@{currentUser.username}) no cuenta con autorización para ingresar al panel de <strong className="text-[#d4af37]">{getPanelName(activeTab)}</strong>.
+              El colaborador <strong className="text-white">{currentUser.name}</strong> no cuenta con autorización para ingresar al panel de <strong className="text-[#d4af37]">{getPanelName(activeTab)}</strong>.
             </p>
 
             <p className="text-[11px] text-zinc-400 mt-2">

@@ -46,11 +46,11 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ initialSubTab = 
     setSecurityError('');
     setSecuritySuccess('');
 
-    const res = login('jilly.admin', unlockPassword);
+    const res = login(adminUser?.username || 'jilly.admin', unlockPassword);
     if (res.success) {
       setSecuritySuccess('¡Panel Administrador desbloqueado correctamente!');
     } else {
-      setSecurityError('Contraseña incorrecta. Se requiere la clave de @jilly.admin.');
+      setSecurityError('Contraseña incorrecta. Verifique la contraseña de administrador.');
     }
   };
 
@@ -82,11 +82,11 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ initialSubTab = 
           </h2>
 
           <p className="text-xs sm:text-sm text-zinc-400 mt-2 mb-6 max-w-md mx-auto leading-relaxed">
-            La <strong>Gestión de Personal, Claves del Equipo, Comisiones y Reportes Financieros</strong> solo pueden ser administrados por la Dirección de Jilly Beauty Lab.
+            La <strong>Gestión de Personal, Accesos del Equipo, Comisiones y Reportes Financieros</strong> solo pueden ser administrados por la Dirección de Jilly Beauty Lab.
           </p>
 
           <div className="p-3 bg-[#18181f] border border-[#27272a] rounded-xl text-xs text-zinc-300 mb-6 max-w-sm mx-auto">
-            <span>Usuario actual: <strong>{currentUser.name}</strong> (@{currentUser.username})</span>
+            <span>Usuario actual: <strong>{currentUser.name}</strong></span>
           </div>
 
           <form onSubmit={handleUnlockAdmin} className="max-w-sm mx-auto space-y-3.5 text-left" autoComplete="off">
@@ -186,17 +186,17 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ initialSubTab = 
         </div>
 
         {/* Subtabs selector */}
-        <div className="flex items-center gap-2 mt-5 pt-4 border-t border-[#252530] overflow-x-auto">
+        <div className="flex items-center gap-2 mt-5 pt-4 border-t border-[#252530] overflow-x-auto pb-2">
           <button
             onClick={() => setAdminTab('staff')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap shrink-0 ${
               adminTab === 'staff'
                 ? 'bg-[#d4af37] text-black shadow-md'
                 : 'bg-[#181820] text-zinc-300 hover:text-white border border-[#27272a]'
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Personal, Claves & Servicios</span>
+            <span>Personal & Paneles de Acceso</span>
           </button>
 
           <button
