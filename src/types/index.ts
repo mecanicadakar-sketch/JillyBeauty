@@ -1,6 +1,6 @@
 export type UserRole = 'admin' | 'specialist' | 'cashier';
 
-export type AppPanel = 'appointments' | 'cashier' | 'inventory' | 'services' | 'admin';
+export type AppPanel = 'appointments' | 'cashier' | 'inventory' | 'services' | 'admin' | 'clients';
 
 export interface User {
   id: string;
@@ -15,7 +15,7 @@ export interface User {
   active: boolean;
   avatar?: string;
   createdAt: string;
-  allowedPanels?: AppPanel[]; // Paneles/módulos a los que puede ingresar: 'appointments' | 'cashier' | 'inventory' | 'services' | 'admin'
+  allowedPanels?: AppPanel[]; // Paneles/módulos a los que puede ingresar: 'appointments' | 'cashier' | 'inventory' | 'services' | 'admin' | 'clients'
   allowedServiceIds?: string[];
   isAdminEnabled?: boolean; // Habilitado con privilegios de administrador
   permissions?: {
@@ -31,8 +31,8 @@ export const canAccessPanel = (user?: User | null, panel?: AppPanel | string): b
   if (!user || !panel) return false;
   if (user.role === 'admin' || user.isAdminEnabled) return true;
   if (!user.allowedPanels || user.allowedPanels.length === 0) {
-    if (user.role === 'cashier') return panel === 'appointments' || panel === 'cashier' || panel === 'services';
-    return panel === 'appointments' || panel === 'services';
+    if (user.role === 'cashier') return panel === 'appointments' || panel === 'cashier' || panel === 'services' || panel === 'clients';
+    return panel === 'appointments' || panel === 'services' || panel === 'clients';
   }
   return user.allowedPanels.includes(panel as AppPanel);
 };
@@ -172,11 +172,26 @@ export interface CashShift {
   movements: CashMovement[];
 }
 
+export interface ClientTreatmentRecord {
+  id: string;
+  serviceId?: string;
+  serviceName: string;
+  date: string; // YYYY-MM-DD
+  time?: string;
+  specialistName: string;
+  notes?: string;
+  productsUsed?: string;
+  price?: number;
+  status: 'completed' | 'in_progress' | 'scheduled';
+}
+
 export interface Client {
   id: string;
+  clientCode: string; // e.g. JBL-1001
   name: string;
   phone: string;
   email?: string;
+  dni?: string;
   birthdate?: string;
   skinType?: 'Normal' | 'Grasa' | 'Mixta' | 'Seca' | 'Sensible';
   allergies?: string;
@@ -184,4 +199,7 @@ export interface Client {
   totalVisits: number;
   totalSpent: number;
   lastVisit?: string;
+  firstVisit?: string;
+  address?: string;
+  treatmentRecords?: ClientTreatmentRecord[];
 }

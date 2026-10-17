@@ -7,29 +7,43 @@ import { POSCashierView } from './components/POSCashierView';
 import { InventoryView } from './components/InventoryView';
 import { ServicesView } from './components/ServicesView';
 import { AdminPanelView } from './components/AdminPanelView';
+import { ClientsView } from './components/ClientsView';
 import { LoginScreen } from './components/LoginScreen';
 import { NewAppointmentModal } from './components/NewAppointmentModal';
 import { ClientBookingPortal } from './components/ClientBookingPortal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { MobileDrawerMenu } from './components/MobileDrawerMenu';
 import { Logo } from './components/Logo';
-import { Service, canAccessPanel, AppPanel } from './types';
+import { Service, Client, canAccessPanel, AppPanel } from './types';
 import { Phone, Instagram, MapPin, Sparkles, Heart, Lock, ShieldAlert } from 'lucide-react';
 
 const MainContent: React.FC = () => {
   const { activeTab, setActiveTab, viewMode, setViewMode, isLoggedOut, currentUser } = useApp();
   const [showNewAptModal, setShowNewAptModal] = useState(false);
   const [preselectedService, setPreselectedService] = useState<Service | null>(null);
+  const [preselectedClient, setPreselectedClient] = useState<Client | null>(null);
 
   const handleScheduleService = (srv: Service) => {
     setPreselectedService(srv);
+    setPreselectedClient(null);
     setShowNewAptModal(true);
+  };
+
+  const handleScheduleClient = (client: Client) => {
+    setPreselectedClient(client);
+    setPreselectedService(null);
+    setShowNewAptModal(true);
+  };
+
+  const handleCheckoutClient = (client: Client) => {
+    setActiveTab('cashier');
   };
 
   const getPanelName = (tab: string) => {
     switch (tab) {
       case 'appointments': return 'Agenda & Citas';
       case 'cashier': return 'Caja & Cobros';
+      case 'clients': return 'Fichas de Clientes';
       case 'inventory': return 'Stock & Insumos';
       case 'services': return 'Servicios del Spa';
       case 'admin':
@@ -108,6 +122,13 @@ const MainContent: React.FC = () => {
               <POSCashierView />
             )}
 
+            {activeTab === 'clients' && (
+              <ClientsView 
+                onScheduleClient={handleScheduleClient} 
+                onCheckoutClient={handleCheckoutClient} 
+              />
+            )}
+
             {activeTab === 'inventory' && (
               <InventoryView />
             )}
@@ -184,9 +205,12 @@ const MainContent: React.FC = () => {
       {/* Global New Appointment Modal */}
       {showNewAptModal && (
         <NewAppointmentModal
+          initialService={preselectedService}
+          initialClient={preselectedClient}
           onClose={() => {
             setShowNewAptModal(false);
             setPreselectedService(null);
+            setPreselectedClient(null);
           }}
         />
       )}

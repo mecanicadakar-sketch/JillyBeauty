@@ -41,7 +41,8 @@ export const POSCashierView: React.FC = () => {
     checkoutAppointment, 
     setCheckoutAppointment,
     lastCompletedSale,
-    setLastCompletedSale
+    setLastCompletedSale,
+    clients
   } = useApp();
 
   // Active ticket / cart state
@@ -561,20 +562,76 @@ export const POSCashierView: React.FC = () => {
               )}
             </div>
 
-            {/* Client input */}
+            {/* Client input with preloaded autocomplete */}
             <div className="py-3 border-b border-[#27272a] space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[10px] text-zinc-400 mb-1">Nombre Cliente *</label>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[10px] text-zinc-400">Nombre Cliente *</label>
+                    {clientName && (
+                      <button 
+                        type="button" 
+                        onClick={() => { setClientName(''); setClientPhone(''); }}
+                        className="text-[9px] text-zinc-500 hover:text-rose-400"
+                      >
+                        Limpiar
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
                     required
-                    placeholder="Ej. Valeria López"
+                    placeholder="Ej. Carolina Benítez"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     className="w-full px-2.5 py-1.5 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#d4af37]"
                   />
+
+                  {/* Autocomplete suggestions dropdown when typing */}
+                  {clientName.trim().length >= 2 && !clients.some(c => c.name.toLowerCase() === clientName.toLowerCase().trim() || c.clientCode?.toLowerCase() === clientName.toLowerCase().trim()) && (
+                    (() => {
+                      const q = clientName.toLowerCase().trim();
+                      const matches = clients.filter(c => 
+                        (c.clientCode && c.clientCode.toLowerCase().includes(q)) ||
+                        c.name.toLowerCase().includes(q) ||
+                        (c.phone && c.phone.includes(q))
+                      ).slice(0, 5);
+
+                      if (matches.length === 0) return null;
+
+                      return (
+                        <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-[#16161f] border border-[#d4af37]/40 rounded-xl shadow-2xl p-1 max-h-48 overflow-y-auto divide-y divide-[#27272a]">
+                          <div className="text-[9px] text-[#fde047] px-2 py-0.5 font-bold uppercase tracking-wider">
+                            Clientes Precargados por Código / Nombre:
+                          </div>
+                          {matches.map(cli => (
+                            <button
+                              key={cli.id}
+                              type="button"
+                              onClick={() => {
+                                setClientName(cli.name);
+                                setClientPhone(cli.phone);
+                              }}
+                              className="w-full text-left px-2 py-1.5 hover:bg-[#20202c] rounded-lg text-xs flex items-center justify-between text-zinc-200 transition-colors"
+                            >
+                              <div className="flex items-center gap-2 truncate">
+                                <span className="font-mono text-[#fde047] font-bold text-[10px] bg-[#d4af37]/20 border border-[#d4af37]/40 px-1 py-0.2 rounded shrink-0">
+                                  {cli.clientCode || 'JBL-1000'}
+                                </span>
+                                <span className="font-semibold text-white truncate">{cli.name}</span>
+                                <span className="text-[10px] text-zinc-400 font-mono shrink-0">({cli.phone})</span>
+                              </div>
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#d4af37]/20 text-[#fde047] font-semibold shrink-0 ml-1">
+                                {cli.totalVisits || 1} vis.
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()
+                  )}
                 </div>
+
                 <div>
                   <label className="block text-[10px] text-zinc-400 mb-1">Teléfono / WhatsApp</label>
                   <input
@@ -582,10 +639,36 @@ export const POSCashierView: React.FC = () => {
                     placeholder="0986702007"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#d4af37]"
+                    className="w-full px-2.5 py-1.5 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#d4af37] font-mono"
                   />
                 </div>
               </div>
+
+              {/* Matched client info badge */}
+              {(() => {
+                const qName = clientName.toLowerCase().trim();
+                const matchedClient = clients.find(c => 
+                  (c.clientCode && c.clientCode.toLowerCase() === qName) ||
+                  c.name.toLowerCase() === qName ||
+                  (clientPhone && c.phone && c.phone.trim() === clientPhone.trim())
+                );
+                if (!matchedClient) return null;
+                return (
+                  <div className="p-2 rounded-lg bg-[#d4af37]/10 border border-[#d4af37]/30 text-[10px] text-[#fde047] flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-bold bg-black/60 px-1.5 py-0.5 rounded border border-[#d4af37]/40 text-white">
+                        {matchedClient.clientCode}
+                      </span>
+                      <span className="font-semibold">
+                        ✓ Cliente precargado: {matchedClient.name} ({matchedClient.totalVisits || 1} visitas)
+                      </span>
+                    </div>
+                    {matchedClient.skinType && (
+                      <span className="text-zinc-300">Piel: {matchedClient.skinType}</span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Cart Items list */}

@@ -18,7 +18,7 @@ interface NavigationProps {
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ onNewAppointmentClick }) => {
-  const { activeTab, setActiveTab, currentUser, appointments } = useApp();
+  const { activeTab, setActiveTab, currentUser, appointments, clients } = useApp();
 
   // Count today's pending/scheduled appointments
   const todayStr = new Date().toISOString().split('T')[0];
@@ -37,6 +37,12 @@ export const Navigation: React.FC<NavigationProps> = ({ onNewAppointmentClick })
       id: 'cashier',
       label: 'Caja & Cobros',
       icon: Receipt,
+    },
+    {
+      id: 'clients',
+      label: 'Clientes',
+      icon: Users,
+      badge: clients.length > 0 ? `${clients.length}` : undefined,
     },
     {
       id: 'inventory',

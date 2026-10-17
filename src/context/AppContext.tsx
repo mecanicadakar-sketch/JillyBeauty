@@ -8,6 +8,7 @@ import {
   CashShift, 
   CashMovement,
   Client, 
+  ClientTreatmentRecord,
   InventoryMovement, 
   AppointmentStatus 
 } from '../types';
@@ -52,6 +53,9 @@ interface AppContextType {
 
   clients: Client[];
   addOrUpdateClient: (client: Partial<Client> & { name: string; phone: string }) => Client;
+  deleteClient: (id: string) => void;
+  updateAdminProfile: (updates: Partial<User>) => void;
+  addClientTreatmentRecord: (clientId: string, record: Omit<ClientTreatmentRecord, 'id'>) => void;
 
   cashShift: CashShift;
   openCashShift: (openingAmount: number, notes?: string) => void;
@@ -67,6 +71,8 @@ interface AppContextType {
   setActiveTab: (tab: string) => void;
   viewMode: 'admin' | 'client_portal';
   setViewMode: (mode: 'admin' | 'client_portal') => void;
+  isStandalonePortal: boolean;
+  setIsStandalonePortal: (standalone: boolean) => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   checkoutAppointment: Appointment | null;
@@ -99,17 +105,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (u.role === 'admin' || u.username === 'jilly.admin' || u.id === 'u-1') {
         return {
           ...u,
-          username: 'jilly.admin',
-          password: 'Jet120588#',
+          username: u.username || 'jilly.admin',
+          password: u.password || 'Jet120588#',
+          avatar: u.avatar || initialMatch?.avatar,
+          name: u.name || initialMatch?.name || 'Directora Jilly',
+          specialty: u.specialty || initialMatch?.specialty || 'Dirección Médica & Cosmiatría Avanzada',
+          phone: u.phone || initialMatch?.phone || '0986702007',
+          email: u.email || initialMatch?.email || 'direccion@jillybeautylab.com',
           isAdminEnabled: true,
-          allowedPanels: u.allowedPanels || ['appointments', 'cashier', 'inventory', 'services', 'admin'],
+          allowedPanels: u.allowedPanels?.length ? u.allowedPanels : ['appointments', 'cashier', 'inventory', 'services', 'admin', 'clients'],
           allowedServiceIds: u.allowedServiceIds || initialMatch?.allowedServiceIds || ['srv-1', 'srv-2', 'srv-3', 'srv-4', 'srv-5', 'srv-6', 'srv-7', 'srv-8', 'srv-9', 'srv-10']
         };
       }
       return {
         ...u,
         isAdminEnabled: u.isAdminEnabled ?? false,
-        allowedPanels: u.allowedPanels || initialMatch?.allowedPanels || ['appointments', 'services'],
+        allowedPanels: u.allowedPanels?.length ? u.allowedPanels : (initialMatch?.allowedPanels || ['appointments', 'services', 'clients']),
         allowedServiceIds: u.allowedServiceIds || initialMatch?.allowedServiceIds || (u.role === 'specialist' ? ['srv-1', 'srv-2', 'srv-3'] : [])
       };
     });
@@ -124,16 +135,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (u.role === 'admin' || u.username === 'jilly.admin' || u.id === 'u-1') {
           return {
             ...u,
-            username: 'jilly.admin',
-            password: 'Jet120588#',
+            username: u.username || 'jilly.admin',
+            password: u.password || 'Jet120588#',
+            avatar: u.avatar || INITIAL_STAFF[0].avatar,
+            name: u.name || INITIAL_STAFF[0].name,
+            specialty: u.specialty || INITIAL_STAFF[0].specialty,
+            phone: u.phone || INITIAL_STAFF[0].phone,
+            email: u.email || INITIAL_STAFF[0].email,
             isAdminEnabled: true,
-            allowedPanels: u.allowedPanels || ['appointments', 'cashier', 'inventory', 'services', 'admin'],
+            allowedPanels: u.allowedPanels?.length ? u.allowedPanels : ['appointments', 'cashier', 'inventory', 'services', 'admin', 'clients'],
             allowedServiceIds: u.allowedServiceIds || ['srv-1', 'srv-2', 'srv-3', 'srv-4', 'srv-5', 'srv-6', 'srv-7', 'srv-8', 'srv-9', 'srv-10']
           };
         }
         return {
           ...u,
-          allowedPanels: u.allowedPanels || ['appointments', 'services']
+          allowedPanels: u.allowedPanels?.length ? u.allowedPanels : ['appointments', 'services', 'clients']
         };
       } catch (e) {
         // Fallback
@@ -164,17 +180,58 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : [];
   });
 
+const checkIsClientPortalUrl = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const path = window.location.pathname.toLowerCase();
+  const search = window.location.search.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+  return (
+    path === '/clientes' || 
+    path.startsWith('/clientes/') || 
+    path === '/portal' || 
+    path.startsWith('/portal/') ||
+    search.includes('portal=clientes') || 
+    search.includes('mode=clientes') || 
+    hash.includes('clientes') ||
+    hash.includes('portal')
+  );
+};
+
   // Appointments
   const [appointments, setAppointments] = useState<Appointment[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.APPOINTMENTS);
     return saved ? JSON.parse(saved) : INITIAL_APPOINTMENTS;
   });
 
-  // Clients
+  // Clients with clientCode guarantee
   const [clients, setClients] = useState<Client[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CLIENTS);
-    return saved ? JSON.parse(saved) : INITIAL_CLIENTS;
+    let list: Client[] = saved ? JSON.parse(saved) : INITIAL_CLIENTS;
+    let nextNum = 1001;
+    list = list.map((c, idx) => {
+      if (!c.clientCode) {
+        return {
+          ...c,
+          clientCode: `JBL-${nextNum + idx}`
+        };
+      }
+      return c;
+    });
+    return list;
   });
+
+  const generateNextClientCode = (currentList: Client[]): string => {
+    let maxNum = 1000;
+    currentList.forEach(c => {
+      if (c.clientCode && c.clientCode.startsWith('JBL-')) {
+        const num = parseInt(c.clientCode.replace('JBL-', ''), 10);
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    });
+    return `JBL-${maxNum + 1}`;
+  };
 
   // Sales
   const [sales, setSales] = useState<Sale[]>(() => {
@@ -190,7 +247,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Navigation & checkout state
   const [activeTab, setActiveTab] = useState<string>('appointments');
-  const [viewMode, setViewMode] = useState<'admin' | 'client_portal'>('admin');
+  const [isStandalonePortal, setIsStandalonePortal] = useState<boolean>(() => {
+    return checkIsClientPortalUrl();
+  });
+  const [viewMode, setViewModeState] = useState<'admin' | 'client_portal'>(() => {
+    return checkIsClientPortalUrl() ? 'client_portal' : 'admin';
+  });
+
+  const setViewMode = (mode: 'admin' | 'client_portal') => {
+    setViewModeState(mode);
+    setIsStandalonePortal(mode === 'client_portal');
+    if (typeof window !== 'undefined') {
+      try {
+        if (mode === 'client_portal') {
+          window.history.pushState(null, '', '/clientes');
+        } else {
+          window.history.pushState(null, '', '/');
+        }
+      } catch (e) {
+        // Fallback for sandboxed iframe
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handlePopState = () => {
+      const isPortal = checkIsClientPortalUrl();
+      setIsStandalonePortal(isPortal);
+      setViewModeState(isPortal ? 'client_portal' : 'admin');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [checkoutAppointment, setCheckoutAppointment] = useState<Appointment | null>(null);
   const [lastCompletedSale, setLastCompletedSale] = useState<Sale | null>(null);
@@ -375,37 +465,115 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Client Methods
   const addOrUpdateClient = (clientData: Partial<Client> & { name: string; phone: string }): Client => {
-    const existingIndex = clients.findIndex(c => c.phone.trim() === clientData.phone.trim());
+    const cleanPhone = clientData.phone ? clientData.phone.trim() : '';
+    const cleanName = clientData.name ? clientData.name.trim() : '';
+    const cleanCode = clientData.clientCode ? clientData.clientCode.trim().toUpperCase() : '';
+
+    const existingIndex = clients.findIndex(c => 
+      (cleanCode && c.clientCode && c.clientCode.toUpperCase() === cleanCode) ||
+      (clientData.id && c.id === clientData.id) ||
+      (cleanPhone && c.phone && c.phone.trim() === cleanPhone) ||
+      (!cleanPhone && cleanName && c.name.toLowerCase() === cleanName.toLowerCase())
+    );
+
     if (existingIndex >= 0) {
       const existing = clients[existingIndex];
       const updated: Client = {
         ...existing,
         ...clientData,
-        name: clientData.name || existing.name,
-        notes: clientData.notes !== undefined ? clientData.notes : existing.notes,
+        clientCode: existing.clientCode || cleanCode || generateNextClientCode(clients),
+        name: cleanName || existing.name,
+        phone: cleanPhone || existing.phone,
+        email: clientData.email !== undefined ? clientData.email : existing.email,
+        dni: clientData.dni !== undefined ? clientData.dni : existing.dni,
+        birthdate: clientData.birthdate !== undefined ? clientData.birthdate : existing.birthdate,
         skinType: clientData.skinType || existing.skinType,
+        allergies: clientData.allergies !== undefined ? clientData.allergies : existing.allergies,
+        notes: clientData.notes !== undefined ? clientData.notes : existing.notes,
+        address: clientData.address !== undefined ? clientData.address : existing.address,
+        treatmentRecords: clientData.treatmentRecords || existing.treatmentRecords || []
       };
       const updatedList = [...clients];
       updatedList[existingIndex] = updated;
       setClients(updatedList);
+      localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(updatedList));
       return updated;
     } else {
       const newClient: Client = {
-        id: `cl-${Date.now()}`,
-        name: clientData.name,
-        phone: clientData.phone,
+        id: clientData.id || `cl-${Date.now()}`,
+        clientCode: cleanCode || generateNextClientCode(clients),
+        name: cleanName,
+        phone: cleanPhone,
         email: clientData.email || '',
+        dni: clientData.dni || '',
         birthdate: clientData.birthdate || '',
         skinType: clientData.skinType || 'Normal',
-        allergies: clientData.allergies || 'Ninguna conocida',
+        allergies: clientData.allergies || '',
         notes: clientData.notes || '',
-        totalVisits: 1,
-        totalSpent: 0,
-        lastVisit: new Date().toISOString().split('T')[0]
+        address: clientData.address || '',
+        totalVisits: clientData.totalVisits || 1,
+        totalSpent: clientData.totalSpent || 0,
+        firstVisit: new Date().toISOString().split('T')[0],
+        lastVisit: new Date().toISOString().split('T')[0],
+        treatmentRecords: clientData.treatmentRecords || []
       };
-      setClients(prev => [newClient, ...prev]);
+      setClients(prev => {
+        const next = [newClient, ...prev];
+        localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(next));
+        return next;
+      });
       return newClient;
     }
+  };
+
+  const deleteClient = (id: string) => {
+    setClients(prev => {
+      const next = prev.filter(c => c.id !== id);
+      localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const addClientTreatmentRecord = (clientId: string, record: Omit<ClientTreatmentRecord, 'id'>) => {
+    const newRecord: ClientTreatmentRecord = {
+      ...record,
+      id: `tr-${Date.now()}`
+    };
+    setClients(prev => {
+      const updated = prev.map(c => {
+        if (c.id === clientId || (c.clientCode && c.clientCode.toUpperCase() === clientId.toUpperCase()) || c.phone === clientId) {
+          const existingRecords = c.treatmentRecords || [];
+          return {
+            ...c,
+            totalVisits: (c.totalVisits || 0) + (record.status === 'completed' ? 1 : 0),
+            totalSpent: (c.totalSpent || 0) + (record.price || 0),
+            lastVisit: record.date || c.lastVisit,
+            treatmentRecords: [newRecord, ...existingRecords]
+          };
+        }
+        return c;
+      });
+      localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateAdminProfile = (updates: Partial<User>) => {
+    setStaffList(prev => {
+      const updated = prev.map(u => {
+        if (u.role === 'admin' || u.username === 'jilly.admin' || u.id === 'u-1' || u.id === currentUser.id) {
+          return { ...u, ...updates };
+        }
+        return u;
+      });
+      localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(updated));
+      return updated;
+    });
+    setCurrentUser(prev => {
+      const updated = { ...prev, ...updates };
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   // Cashier & POS Methods
@@ -519,19 +687,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     }
 
-    // Update client total spent and visit count
-    if (newSale.clientPhone) {
-      setClients(prev => prev.map(c => {
-        if (c.phone === newSale.clientPhone) {
-          return {
-            ...c,
-            totalVisits: c.totalVisits + 1,
-            totalSpent: c.totalSpent + newSale.total,
+    // Update or register client total spent and visit count so they remain preloaded
+    if (newSale.clientName) {
+      const cleanPhone = (newSale.clientPhone || '').trim();
+      const cleanName = newSale.clientName.trim();
+      setClients(prev => {
+        const idx = prev.findIndex(c => 
+          (cleanPhone && c.phone && c.phone.trim() === cleanPhone) ||
+          c.name.toLowerCase() === cleanName.toLowerCase()
+        );
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = {
+            ...updated[idx],
+            phone: updated[idx].phone || cleanPhone,
+            totalVisits: (updated[idx].totalVisits || 0) + 1,
+            totalSpent: (updated[idx].totalSpent || 0) + newSale.total,
             lastVisit: date.split('T')[0]
           };
+          localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(updated));
+          return updated;
+        } else {
+          const newCli: Client = {
+            id: `cl-${Date.now()}`,
+            clientCode: generateNextClientCode(prev),
+            name: cleanName,
+            phone: cleanPhone || 'Sin teléfono',
+            totalVisits: 1,
+            totalSpent: newSale.total,
+            lastVisit: date.split('T')[0],
+            firstVisit: date.split('T')[0],
+            skinType: 'Normal',
+            allergies: 'Ninguna conocida',
+            notes: `Cliente registrado por consumo Ticket #${ticketNumber}`,
+            treatmentRecords: []
+          };
+          const next = [newCli, ...prev];
+          localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(next));
+          return next;
         }
-        return c;
-      }));
+      });
     }
 
     setLastCompletedSale(newSale);
@@ -564,6 +759,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         switchUser,
         isLoggedOut,
         setIsLoggedOut,
+        updateAdminProfile,
 
         services,
         addService,
@@ -584,6 +780,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         clients,
         addOrUpdateClient,
+        deleteClient,
+        addClientTreatmentRecord,
 
         cashShift,
         openCashShift,
@@ -599,6 +797,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveTab,
         viewMode,
         setViewMode,
+        isStandalonePortal,
+        setIsStandalonePortal,
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         checkoutAppointment,

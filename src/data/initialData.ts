@@ -407,6 +407,7 @@ export const INITIAL_PRODUCTS: Product[] = [
 export const INITIAL_CLIENTS: Client[] = [
   {
     id: 'cl-1',
+    clientCode: 'JBL-1001',
     name: 'Carolina Benítez',
     phone: '0991234888',
     email: 'carolina.b@gmail.com',
@@ -416,10 +417,36 @@ export const INITIAL_CLIENTS: Client[] = [
     notes: 'Cliente frecuente de Hollywood Peel y Dermaplaning. Excelente tolerancia.',
     totalVisits: 6,
     totalSpent: 260.0,
-    lastVisit: '2026-10-10'
+    lastVisit: '2026-10-10',
+    firstVisit: '2026-04-12',
+    treatmentRecords: [
+      {
+        id: 'tr-1',
+        serviceId: 'srv-2',
+        serviceName: 'Hollywood Peel y Peeling Despigmentante',
+        date: '2026-10-10',
+        time: '10:00',
+        specialistName: 'Directora Jilly',
+        price: 55.0,
+        status: 'completed',
+        notes: 'Sesión 3: carbón activo con láser Nd:YAG. Buena respuesta cutánea, poros minimizados.'
+      },
+      {
+        id: 'tr-2',
+        serviceId: 'srv-1',
+        serviceName: 'Rejuvenecimiento Facial y Corporal con Tecnología Avanzada',
+        date: '2026-09-18',
+        time: '11:30',
+        specialistName: 'Directora Jilly',
+        price: 60.0,
+        status: 'completed',
+        notes: 'Protocolo antiedad de colágeno. Dermis redensificada.'
+      }
+    ]
   },
   {
     id: 'cl-2',
+    clientCode: 'JBL-1002',
     name: 'Gabriela Mendoza',
     phone: '0984433221',
     email: 'gaby.mendoza@hotmail.com',
@@ -429,10 +456,25 @@ export const INITIAL_CLIENTS: Client[] = [
     notes: 'Tratamiento de hidratación profunda y uñas esculpidas cada 21 días.',
     totalVisits: 9,
     totalSpent: 395.0,
-    lastVisit: '2026-10-11'
+    lastVisit: '2026-10-11',
+    firstVisit: '2026-02-10',
+    treatmentRecords: [
+      {
+        id: 'tr-3',
+        serviceId: 'srv-8',
+        serviceName: 'Uñas Esculpidas en Gel & Acrílico con Diseños Exclusivos',
+        date: '2026-10-11',
+        time: '15:00',
+        specialistName: 'Sofía Vargas',
+        price: 35.0,
+        status: 'completed',
+        notes: 'Mantenimiento de gel con punta francesa dorada.'
+      }
+    ]
   },
   {
     id: 'cl-3',
+    clientCode: 'JBL-1003',
     name: 'Lorena Zambrano',
     phone: '0997788990',
     email: 'lore.zambrano@gmail.com',
@@ -442,10 +484,25 @@ export const INITIAL_CLIENTS: Client[] = [
     notes: 'Depilación láser en axilas y piernas (sesión 4 de 6).',
     totalVisits: 4,
     totalSpent: 175.0,
-    lastVisit: '2026-10-08'
+    lastVisit: '2026-10-08',
+    firstVisit: '2026-06-01',
+    treatmentRecords: [
+      {
+        id: 'tr-4',
+        serviceId: 'srv-4',
+        serviceName: 'Depilación Láser Diodo / Definitiva (Zonas a Elección)',
+        date: '2026-10-08',
+        time: '14:00',
+        specialistName: 'Valeria Montero',
+        price: 45.0,
+        status: 'completed',
+        notes: 'Sesión 4: Parámetros 18J/cm2. Sin irritación, tolerancia óptima.'
+      }
+    ]
   },
   {
     id: 'cl-4',
+    clientCode: 'JBL-1004',
     name: 'María Fernanda Vega',
     phone: '0985544332',
     email: 'mafe.vega@yahoo.com',
@@ -455,10 +512,12 @@ export const INITIAL_CLIENTS: Client[] = [
     notes: 'Tratamiento de acné y peeling salicílico.',
     totalVisits: 3,
     totalSpent: 125.0,
-    lastVisit: '2026-10-05'
+    lastVisit: '2026-10-05',
+    firstVisit: '2026-07-15'
   },
   {
     id: 'cl-5',
+    clientCode: 'JBL-1005',
     name: 'Daniela Salazar',
     phone: '0993322110',
     email: 'daniela.salazar@gmail.com',
@@ -468,7 +527,8 @@ export const INITIAL_CLIENTS: Client[] = [
     notes: 'Micropigmentación de cejas realizada con retoque completado.',
     totalVisits: 5,
     totalSpent: 240.0,
-    lastVisit: '2026-10-09'
+    lastVisit: '2026-10-09',
+    firstVisit: '2026-05-20'
   }
 ];
 

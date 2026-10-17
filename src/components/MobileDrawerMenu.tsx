@@ -41,6 +41,7 @@ export const MobileDrawerMenu: React.FC<MobileDrawerMenuProps> = ({ onNewAppoint
     products, 
     cashShift, 
     appointments, 
+    clients,
     setViewMode, 
     logout 
   } = useApp();
@@ -85,6 +86,14 @@ export const MobileDrawerMenu: React.FC<MobileDrawerMenuProps> = ({ onNewAppoint
       badgeColor: cashShift.status === 'open' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300',
     },
     {
+      id: 'clients',
+      title: 'Fichas de Clientes',
+      subtitle: 'Historial de visitas, diagnósticos de piel y precarga',
+      icon: Users,
+      badge: `${clients.length} fichas`,
+      badgeColor: 'bg-pink-500/20 text-pink-300',
+    },
+    {
       id: 'inventory',
       title: 'Stock & Insumos',
       subtitle: 'Control de productos de reventa e insumos de cabina',
@@ -101,7 +110,7 @@ export const MobileDrawerMenu: React.FC<MobileDrawerMenuProps> = ({ onNewAppoint
     {
       id: 'admin',
       title: 'Panel Administrador',
-      subtitle: 'Personal, Claves, Comisiones y Reportes Financieros',
+      subtitle: 'Foto y Datos, Personal, Claves y Reportes Financieros',
       icon: ShieldCheck,
       adminOnly: true,
       badge: 'Admin',

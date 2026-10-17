@@ -20,9 +20,16 @@ import {
   ExternalLink,
   Lock,
   Star,
-  Check
+  Check,
+  Hash,
+  Copy,
+  FileText,
+  AlertCircle,
+  Stethoscope,
+  CalendarDays,
+  ShieldAlert
 } from 'lucide-react';
-import { Service, User as SpecialistUser } from '../types';
+import { Service, User as SpecialistUser, Client } from '../types';
 
 export const ClientBookingPortal: React.FC = () => {
   const { 
@@ -30,11 +37,15 @@ export const ClientBookingPortal: React.FC = () => {
     staffList, 
     addAppointment, 
     appointments, 
-    setViewMode 
+    setViewMode,
+    clients,
+    addOrUpdateClient,
+    isStandalonePortal,
+    login
   } = useApp();
 
-  // Active view: 'book' or 'my_appointments'
-  const [activePortalTab, setActivePortalTab] = useState<'book' | 'my_appointments'>('book');
+  // Active view: 'book' or 'my_history'
+  const [activePortalTab, setActivePortalTab] = useState<'book' | 'my_history'>('book');
 
   // Booking Flow Steps (1: Service, 2: Specialist, 3: DateTime, 4: Client Info, 5: Confirmation)
   const [step, setStep] = useState<number>(1);
@@ -48,7 +59,12 @@ export const ClientBookingPortal: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [selectedTime, setSelectedTime] = useState<string>('10:00');
 
-  // Client Info
+  // Client Info & Preloading with Client Code
+  const [inputClientCode, setInputClientCode] = useState('');
+  const [clientLookupSuccess, setClientLookupSuccess] = useState('');
+  const [clientLookupError, setClientLookupError] = useState('');
+  const [matchedClientCode, setMatchedClientCode] = useState('');
+
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
@@ -62,6 +78,7 @@ export const ClientBookingPortal: React.FC = () => {
   // Confirmation state
   const [confirmedBooking, setConfirmedBooking] = useState<{
     code: string;
+    clientCode: string;
     serviceName: string;
     specialistName: string;
     date: string;
@@ -71,12 +88,21 @@ export const ClientBookingPortal: React.FC = () => {
     clientPhone: string;
   } | null>(null);
 
-  // Lookup state for "My Appointments"
-  const [lookupPhone, setLookupPhone] = useState('');
-  const [lookupResults, setLookupResults] = useState<typeof appointments | null>(null);
+  // Lookup state for "My Appointments & Treatments"
+  const [lookupQuery, setLookupQuery] = useState('');
+  const [matchedClientForHistory, setMatchedClientForHistory] = useState<Client | null>(null);
+  const [lookupHistorySearched, setLookupHistorySearched] = useState(false);
+  const [copiedCodeNotice, setCopiedCodeNotice] = useState(false);
+
+  // Staff unlock modal in standalone mode
+  const [showStaffUnlockModal, setShowStaffUnlockModal] = useState(false);
+  const [staffUsername, setStaffUsername] = useState('jilly.admin');
+  const [staffPassword, setStaffPassword] = useState('');
+  const [staffUnlockError, setStaffUnlockError] = useState('');
 
   const availableTimeSlots = [
-    '09:00', '10:00', '11:30', '14:00', '15:30', '17:00', '18:30'
+    '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'
   ];
 
   const serviceCategories = [
@@ -118,6 +144,41 @@ export const ClientBookingPortal: React.FC = () => {
     window.scrollTo({ top: 380, behavior: 'smooth' });
   };
 
+  const handleLookupClientCode = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setClientLookupError('');
+    setClientLookupSuccess('');
+
+    const query = inputClientCode.trim().toUpperCase();
+    if (!query) {
+      setClientLookupError('Ingresa tu código de clienta (ej. JBL-1001 ó 1001) o tu número de WhatsApp.');
+      return;
+    }
+
+    const cleanDigits = query.replace(/\D/g, '');
+    const match = clients.find(c => {
+      const matchCode = c.clientCode && (
+        c.clientCode.toUpperCase() === query ||
+        c.clientCode.toUpperCase() === `JBL-${query}` ||
+        (cleanDigits.length >= 2 && c.clientCode.includes(cleanDigits))
+      );
+      const matchPhone = cleanDigits.length >= 7 && c.phone.replace(/\D/g, '').includes(cleanDigits);
+      return matchCode || matchPhone;
+    });
+
+    if (match) {
+      setClientName(match.name);
+      setClientPhone(match.phone);
+      if (match.email) setClientEmail(match.email);
+      if (match.skinType) setSkinType(match.skinType);
+      if (match.notes) setNotes(match.notes);
+      setMatchedClientCode(match.clientCode);
+      setClientLookupSuccess(`¡Hola, ${match.name}! Tus datos fueron precargados con éxito (Código: ${match.clientCode}).`);
+    } else {
+      setClientLookupError('No encontramos una ficha con ese código o número. Puedes completar tus datos abajo para registrarte y se te asignará un código nuevo.');
+    }
+  };
+
   const handleSubmitBooking = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -140,7 +201,19 @@ export const ClientBookingPortal: React.FC = () => {
       assignedSpecialist = staffList.find(s => s.id === selectedSpecialistId);
     }
 
-    const bookingCode = `JBL-${Math.floor(1000 + Math.random() * 9000)}`;
+    const bookingCode = `RES-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Register or retrieve client with unique clientCode
+    const savedClient = addOrUpdateClient({
+      clientCode: matchedClientCode || undefined,
+      name: clientName.trim(),
+      phone: clientPhone.trim(),
+      email: clientEmail.trim() || undefined,
+      skinType: skinType as any,
+      notes: notes.trim()
+    });
+
+    const finalClientCode = savedClient.clientCode || matchedClientCode || 'JBL-1001';
 
     addAppointment({
       clientName: clientName.trim(),
@@ -150,20 +223,21 @@ export const ClientBookingPortal: React.FC = () => {
       serviceName: selectedService.name,
       servicePrice: selectedService.price,
       specialistId: assignedSpecialist?.id || staffList[0].id,
-      specialistName: assignedSpecialist?.name || 'Jilly Directora',
+      specialistName: assignedSpecialist?.name || 'Directora Jilly',
       date: selectedDate,
       time: selectedTime,
       durationMin: selectedService.durationMin,
       status: 'confirmed',
-      notes: `Reserva Online Web [Código: ${bookingCode}] - ${notes.trim()}`,
+      notes: `Reserva Online Web [Reserva: ${bookingCode} | Código: ${finalClientCode}] - ${notes.trim()}`,
       skinType,
       createdBy: 'Portal Web Clientes'
     });
 
     setConfirmedBooking({
       code: bookingCode,
+      clientCode: finalClientCode,
       serviceName: selectedService.name,
-      specialistName: assignedSpecialist?.name || 'Jilly Directora',
+      specialistName: assignedSpecialist?.name || 'Directora Jilly',
       date: selectedDate,
       time: selectedTime,
       price: selectedService.price,
@@ -177,10 +251,11 @@ export const ClientBookingPortal: React.FC = () => {
 
   const handleSendWhatsAppConfirmation = () => {
     if (!confirmedBooking) return;
-    const phoneSpa = '593986704085'; // Official WhatsApp from Instagram: 0986 704 085
+    const phoneSpa = '593986704085'; // Official WhatsApp: 0986 704 085
     const message = encodeURIComponent(
       `¡Hola Jilly Beauty Lab Center! ✨ Acabo de solicitar mi turno online desde la web:\n\n` +
       `📋 *Código de Reserva:* ${confirmedBooking.code}\n` +
+      `💳 *Código de Clienta:* ${confirmedBooking.clientCode}\n` +
       `👤 *Cliente:* ${confirmedBooking.clientName}\n` +
       `💅 *Tratamiento:* ${confirmedBooking.serviceName}\n` +
       `📅 *Fecha:* ${confirmedBooking.date}\n` +
@@ -193,13 +268,52 @@ export const ClientBookingPortal: React.FC = () => {
     window.open(`https://wa.me/${phoneSpa}?text=${message}`, '_blank');
   };
 
-  const handleSearchAppointments = (e: React.FormEvent) => {
+  // Search client history & treatments
+  const handleSearchHistory = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lookupPhone.trim()) return;
-    const clean = lookupPhone.replace(/\D/g, '');
-    const found = appointments.filter(a => a.clientPhone.replace(/\D/g, '').includes(clean));
-    setLookupResults(found);
+    const query = lookupQuery.trim().toUpperCase();
+    if (!query) return;
+
+    setLookupHistorySearched(true);
+    const cleanDigits = query.replace(/\D/g, '');
+
+    const foundClient = clients.find(c => {
+      const matchCode = c.clientCode && (
+        c.clientCode.toUpperCase() === query ||
+        c.clientCode.toUpperCase() === `JBL-${query}` ||
+        (cleanDigits.length >= 2 && c.clientCode.includes(cleanDigits))
+      );
+      const matchPhone = cleanDigits.length >= 7 && c.phone.replace(/\D/g, '').includes(cleanDigits);
+      const matchName = c.name.toUpperCase().includes(query);
+      return matchCode || matchPhone || matchName;
+    });
+
+    setMatchedClientForHistory(foundClient || null);
   };
+
+  const handleStaffUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStaffUnlockError('');
+    const success = login(staffUsername, staffPassword);
+    if (success) {
+      setShowStaffUnlockModal(false);
+      setViewMode('admin');
+    } else {
+      setStaffUnlockError('Usuario o contraseña de colaboradora incorrecto.');
+    }
+  };
+
+  // Upcoming / past appointments for matched client
+  const clientAppointmentsForHistory = React.useMemo(() => {
+    if (!matchedClientForHistory) return [];
+    const cleanPhone = matchedClientForHistory.phone.replace(/[^0-9]/g, '');
+    const clientCode = matchedClientForHistory.clientCode?.toUpperCase();
+    return appointments.filter(a => {
+      const matchPhone = cleanPhone && a.clientPhone.replace(/[^0-9]/g, '') === cleanPhone;
+      const matchCode = clientCode && a.notes?.toUpperCase().includes(clientCode);
+      return matchPhone || matchCode;
+    });
+  }, [matchedClientForHistory, appointments]);
 
   return (
     <div className="min-h-screen bg-[#070709] text-[#f4f4f5] flex flex-col selection:bg-[#d4af37]/30 selection:text-[#fde047]">
@@ -209,11 +323,11 @@ export const ClientBookingPortal: React.FC = () => {
           <div className="flex items-center gap-3">
             <span className="text-[#d4af37] font-semibold flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Portal de Citas Online</span>
+              <span>Portal de Clientes · Jilly Beauty Lab</span>
             </span>
             <span className="hidden sm:inline text-zinc-500">|</span>
             <span className="hidden sm:inline text-zinc-400">
-              Atención personalizada con tecnología avanzada
+              Turnos Online & Ficha Personal de Tratamientos
             </span>
           </div>
 
@@ -222,30 +336,31 @@ export const ClientBookingPortal: React.FC = () => {
               href="https://wa.me/593986704085"
               target="_blank"
               rel="noreferrer"
-              className="text-zinc-300 hover:text-emerald-400 transition-colors flex items-center gap-1"
+              className="text-zinc-300 hover:text-emerald-400 transition-colors flex items-center gap-1 font-mono text-[11px]"
             >
               <Phone className="w-3.5 h-3.5 text-emerald-500" />
               <span>0986 704 085</span>
             </a>
 
+            {/* Protected Staff Switcher: asks for credentials so clients can never open admin panel */}
             <button
-              onClick={() => setViewMode('admin')}
-              className="px-2.5 py-1 bg-[#1a1a22] hover:bg-[#252530] text-[#d4af37] border border-[#d4af37]/40 rounded-lg font-medium transition-all flex items-center gap-1 text-[11px]"
-              title="Volver al panel administrativo interno"
+              onClick={() => setShowStaffUnlockModal(true)}
+              className="px-2.5 py-1 bg-[#1a1a22] hover:bg-[#252530] text-zinc-400 hover:text-[#d4af37] border border-[#27272a] rounded-lg font-medium transition-all flex items-center gap-1 text-[11px]"
+              title="Acceso restringido para el personal del spa"
             >
-              <Lock className="w-3 h-3" />
-              <span>Panel Spa / Personal</span>
+              <Lock className="w-3 h-3 text-zinc-500" />
+              <span className="hidden sm:inline">Acceso Personal</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Hero Banner matching Instagram post */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#141418] via-[#0d0d10] to-[#070709] border-b border-[#27272a] py-12 sm:py-16">
+      {/* Hero Banner */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#141418] via-[#0d0d10] to-[#070709] border-b border-[#27272a] py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             {/* Center Logo */}
-            <div className="flex justify-center mb-5">
+            <div className="flex justify-center mb-4">
               <Logo size="lg" showSubtitle={false} className="drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />
             </div>
 
@@ -255,51 +370,53 @@ export const ClientBookingPortal: React.FC = () => {
             </div>
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white font-serif-luxury tracking-tight leading-tight px-2">
-              Agendá tu Cita en <span className="text-gold-gradient block sm:inline mt-1 sm:mt-0 drop-shadow-[0_2px_12px_rgba(212,175,55,0.3)]">Jilly Beauty Lab</span>
+              Portal de Clientes <span className="text-gold-gradient block sm:inline mt-1 sm:mt-0 drop-shadow-[0_2px_12px_rgba(212,175,55,0.3)]">Jilly Beauty Lab</span>
             </h1>
 
-            <p className="text-sm sm:text-base text-zinc-300 mt-4 leading-relaxed max-w-2xl mx-auto">
-              Te ofrecemos tratamientos pensados para realzar tu piel, cuidar tu cuerpo y resaltar tu mejor versión con tecnología médica de vanguardia y resultados visibles.
+            <p className="text-xs sm:text-sm text-zinc-300 mt-3 leading-relaxed max-w-2xl mx-auto">
+              Agenda tu cita online al instante o consulta tu historial de tratamientos realizados y recomendaciones estéticas usando tu <strong>Código de Clienta</strong>.
             </p>
 
             {/* Feature Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mt-6 pt-4 border-t border-[#27272a]/80 text-xs text-zinc-300">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mt-5 pt-3 border-t border-[#27272a]/80 text-xs text-zinc-300">
               <span className="flex items-center gap-1.5 text-zinc-200">
                 <Check className="w-4 h-4 text-[#d4af37]" />
-                Tecnología Avanzada
+                Tecnología Médica Avanzada
               </span>
               <span className="flex items-center gap-1.5 text-zinc-200">
                 <Check className="w-4 h-4 text-[#d4af37]" />
-                Resultados Visibles
+                Ficha Personalizada con Código
               </span>
               <span className="flex items-center gap-1.5 text-zinc-200">
                 <Check className="w-4 h-4 text-[#d4af37]" />
-                Atención Personalizada
+                Atención Exclusiva en Cabina
               </span>
             </div>
 
-            {/* View switcher: Book vs Lookup */}
-            <div className="flex justify-center gap-2 mt-8">
+            {/* View switcher: Book vs My Treatments & Appointments */}
+            <div className="flex justify-center gap-2.5 mt-7">
               <button
                 onClick={() => { setActivePortalTab('book'); setStep(1); }}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
                   activePortalTab === 'book'
-                    ? 'bg-gradient-to-r from-[#d4af37] via-[#e5c158] to-[#aa8421] text-black shadow-lg shadow-[#d4af37]/20 scale-105'
+                    ? 'bg-gradient-to-r from-[#d4af37] via-[#e5c158] to-[#aa8421] text-black shadow-lg shadow-[#d4af37]/25 scale-105'
                     : 'bg-[#18181f] text-zinc-400 hover:text-white border border-[#27272a]'
                 }`}
               >
-                Reservar Nuevo Turno Online
+                <Calendar className="w-4 h-4" />
+                <span>Reservar Nuevo Turno Online</span>
               </button>
 
               <button
-                onClick={() => setActivePortalTab('my_appointments')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  activePortalTab === 'my_appointments'
-                    ? 'bg-gradient-to-r from-[#d4af37] via-[#e5c158] to-[#aa8421] text-black shadow-lg shadow-[#d4af37]/20 scale-105'
+                onClick={() => setActivePortalTab('my_history')}
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  activePortalTab === 'my_history'
+                    ? 'bg-gradient-to-r from-[#d4af37] via-[#e5c158] to-[#aa8421] text-black shadow-lg shadow-[#d4af37]/25 scale-105'
                     : 'bg-[#18181f] text-zinc-400 hover:text-white border border-[#27272a]'
                 }`}
               >
-                Consultar Mis Turnos
+                <FileText className="w-4 h-4" />
+                <span>Consultar Mi Ficha & Tratamientos</span>
               </button>
             </div>
           </div>
@@ -311,57 +428,184 @@ export const ClientBookingPortal: React.FC = () => {
 
       {/* Main Section */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {activePortalTab === 'my_appointments' ? (
-          /* Client Appointments Lookup View */
-          <div className="max-w-xl mx-auto bg-[#121216] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
-            <h2 className="text-xl font-bold text-white font-serif-luxury text-center mb-2">
-              Consulta el Estado de tu Turno
-            </h2>
-            <p className="text-xs text-zinc-400 text-center mb-6">
-              Ingresa el número de teléfono con el que realizaste la reserva para ver los detalles de tu cita.
-            </p>
+        {activePortalTab === 'my_history' ? (
+          /* Client Treatments & Appointments Lookup View */
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="bg-[#121216] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+              <h2 className="text-xl font-bold text-white font-serif-luxury text-center mb-2">
+                Consulta tu Ficha de Tratamientos & Turnos
+              </h2>
+              <p className="text-xs text-zinc-400 text-center mb-6 max-w-md mx-auto">
+                Ingresa tu <strong>Código de Clienta</strong> (ej. JBL-1001 ó 1001) o tu número de WhatsApp para ver tu historial de sesiones realizadas y próximas citas.
+              </p>
 
-            <form onSubmit={handleSearchAppointments} className="flex gap-2 mb-6">
-              <input
-                type="tel"
-                placeholder="Ej. 0986704085"
-                value={lookupPhone}
-                onChange={(e) => setLookupPhone(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-[#18181d] border border-[#27272a] rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#d4af37]"
-              />
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-[#d4af37] text-black font-semibold text-xs rounded-xl hover:brightness-110"
-              >
-                Buscar
-              </button>
-            </form>
+              <form onSubmit={handleSearchHistory} className="flex gap-2 mb-2">
+                <div className="relative flex-1">
+                  <Hash className="w-4 h-4 text-[#d4af37] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Ej. JBL-1001 ó 0986704085"
+                    value={lookupQuery}
+                    onChange={(e) => setLookupQuery(e.target.value)}
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-[#18181d] border border-[#27272a] rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#d4af37] font-mono"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-[#d4af37] text-black font-bold text-xs rounded-xl hover:brightness-110 flex items-center gap-1.5 shrink-0"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Consultar</span>
+                </button>
+              </form>
+            </div>
 
-            {lookupResults && (
-              <div className="space-y-3 pt-4 border-t border-[#27272a]">
-                {lookupResults.length === 0 ? (
-                  <p className="text-xs text-zinc-500 text-center py-4">
-                    No encontramos turnos registrados con ese número. Puedes solicitar uno nuevo fácilmente.
-                  </p>
+            {/* Results Display */}
+            {lookupHistorySearched && (
+              <div>
+                {!matchedClientForHistory ? (
+                  <div className="p-6 bg-[#121216] border border-[#27272a] rounded-2xl text-center text-xs text-zinc-400">
+                    <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-white mb-1">
+                      No encontramos un expediente con ese código o número
+                    </p>
+                    <p className="text-zinc-500 max-w-md mx-auto mb-4">
+                      Verifica que el código coincida con tu voucher (ej. JBL-1001) o puedes reservar tu primer turno para registrarte automáticamente.
+                    </p>
+                    <button
+                      onClick={() => { setActivePortalTab('book'); setStep(1); }}
+                      className="px-4 py-2 bg-[#d4af37] text-black font-bold rounded-xl text-xs hover:brightness-110"
+                    >
+                      Reservar Mi Primer Turno
+                    </button>
+                  </div>
                 ) : (
-                  lookupResults.map((apt) => (
-                    <div key={apt.id} className="p-4 bg-[#18181d] border border-[#27272a] rounded-xl space-y-2 text-xs">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="font-bold text-white text-sm">{apt.serviceName}</span>
-                          <p className="text-[11px] text-[#d4af37] mt-0.5">Especialista: {apt.specialistName}</p>
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    {/* Client Profile Header Card */}
+                    <div className="bg-[#121216] border border-[#d4af37]/50 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#1f1f28] to-[#2c2c38] border-2 border-[#d4af37] flex items-center justify-center text-base font-bold text-[#e5c158]">
+                            {matchedClientForHistory.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-bold text-white font-serif-luxury">
+                                {matchedClientForHistory.name}
+                              </h3>
+                              <span className="font-mono font-bold text-xs bg-black/60 px-2.5 py-0.5 rounded border border-[#d4af37]/60 text-[#fde047]">
+                                {matchedClientForHistory.clientCode}
+                              </span>
+                            </div>
+                            <p className="text-xs text-zinc-400 mt-0.5">
+                              Tipo de Piel: <strong className="text-sky-300">{matchedClientForHistory.skinType || 'Mixta'}</strong> · {matchedClientForHistory.totalVisits || 1} visitas realizadas
+                            </p>
+                          </div>
                         </div>
-                        <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full capitalize">
-                          {apt.status === 'confirmed' ? 'Confirmada' : apt.status}
-                        </span>
+
+                        <button
+                          onClick={() => {
+                            setClientName(matchedClientForHistory.name);
+                            setClientPhone(matchedClientForHistory.phone);
+                            if (matchedClientForHistory.email) setClientEmail(matchedClientForHistory.email);
+                            if (matchedClientForHistory.skinType) setSkinType(matchedClientForHistory.skinType);
+                            setMatchedClientCode(matchedClientForHistory.clientCode);
+                            setActivePortalTab('book');
+                            setStep(1);
+                          }}
+                          className="px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-bold text-xs rounded-xl hover:brightness-110 shadow-md flex items-center justify-center gap-1.5 self-start sm:self-auto"
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>Agendar Nueva Cita</span>
+                        </button>
                       </div>
-                      <div className="flex items-center gap-4 text-zinc-400 text-[11px] pt-1 border-t border-zinc-800">
-                        <span>📅 {apt.date}</span>
-                        <span>⏰ {apt.time} ({apt.durationMin} min)</span>
-                        <span className="text-white font-mono font-bold">${apt.servicePrice.toFixed(2)}</span>
-                      </div>
+
+                      {matchedClientForHistory.notes && (
+                        <div className="mt-4 p-3 bg-[#181820] border border-[#27272a] rounded-xl text-xs text-zinc-300">
+                          <strong className="text-[#d4af37]">Diagnóstico & Recomendación de la Directora:</strong>
+                          <p className="mt-1 text-zinc-400">{matchedClientForHistory.notes}</p>
+                        </div>
+                      )}
                     </div>
-                  ))
+
+                    {/* Tratamientos Realizados en el Spa */}
+                    <div className="bg-[#121216] border border-[#27272a] rounded-2xl p-5 shadow-xl space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-[#27272a]">
+                        <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                          <Stethoscope className="w-4 h-4 text-purple-400" />
+                          <span>Tratamientos Realizados en Cabina ({matchedClientForHistory.treatmentRecords?.length || 0})</span>
+                        </h4>
+                      </div>
+
+                      {(!matchedClientForHistory.treatmentRecords || matchedClientForHistory.treatmentRecords.length === 0) ? (
+                        <p className="text-xs text-zinc-500 italic py-2">
+                          No tienes tratamientos registrados aún en tu ficha clínica.
+                        </p>
+                      ) : (
+                        <div className="space-y-2.5">
+                          {matchedClientForHistory.treatmentRecords.map(tr => (
+                            <div key={tr.id} className="p-3.5 bg-[#171720] border border-[#27272a] rounded-xl space-y-1.5 text-xs">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <span className="font-bold text-white text-sm">{tr.serviceName}</span>
+                                  <div className="text-[11px] text-zinc-400 mt-0.5">
+                                    📅 {tr.date} · Especialista: <span className="text-[#d4af37]">{tr.specialistName}</span>
+                                  </div>
+                                </div>
+                                <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full capitalize">
+                                  {tr.status === 'completed' ? 'Completado' : tr.status}
+                                </span>
+                              </div>
+
+                              {tr.productsUsed && (
+                                <div className="text-[11px] text-purple-300 bg-purple-950/20 p-2 rounded-lg border border-purple-500/20">
+                                  <strong>Fórmula / Protocolo aplicado:</strong> {tr.productsUsed}
+                                </div>
+                              )}
+
+                              {tr.notes && (
+                                <div className="text-[11px] text-zinc-300 bg-[#121216] p-2 rounded-lg border border-[#252530]">
+                                  <strong>Observación de la especialista:</strong> {tr.notes}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Próximas Citas y Turnos */}
+                    <div className="bg-[#121216] border border-[#27272a] rounded-2xl p-5 shadow-xl space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-[#27272a]">
+                        <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                          <CalendarDays className="w-4 h-4 text-[#d4af37]" />
+                          <span>Tus Citas en Agenda ({clientAppointmentsForHistory.length})</span>
+                        </h4>
+                      </div>
+
+                      {clientAppointmentsForHistory.length === 0 ? (
+                        <p className="text-xs text-zinc-500 italic py-2">
+                          No tienes turnos pendientes en la agenda. Puedes agendar uno ahora.
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {clientAppointmentsForHistory.map(apt => (
+                            <div key={apt.id} className="p-3 bg-[#18181d] border border-[#27272a] rounded-xl flex items-center justify-between text-xs">
+                              <div>
+                                <span className="font-bold text-white text-sm">{apt.serviceName}</span>
+                                <div className="text-[11px] text-zinc-400 mt-0.5">
+                                  📅 {apt.date} a las {apt.time} · Especialista: {apt.specialistName}
+                                </div>
+                              </div>
+                              <span className="text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full capitalize">
+                                {apt.status === 'confirmed' ? 'Confirmada' : apt.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -566,9 +810,7 @@ export const ClientBookingPortal: React.FC = () => {
                           <h4 className="text-sm font-bold text-white">{st.name}</h4>
                           <p className="text-xs text-zinc-400">{st.specialty}</p>
                           <span className="text-[10px] text-[#d4af37] font-medium mt-0.5 flex items-center gap-1">
-                            ★ {(!st.allowedServiceIds || st.allowedServiceIds.includes(selectedService?.id || '') || st.role === 'admin')
-                              ? 'Especialista Habilitada para este Tratamiento'
-                              : 'Cosmiatra Certificada'}
+                            ★ Cosmiatra Certificada
                           </span>
                         </div>
                       </div>
@@ -678,7 +920,7 @@ export const ClientBookingPortal: React.FC = () => {
               </div>
             )}
 
-            {/* Step 4: Client Contact Information */}
+            {/* Step 4: Client Contact Information with Client Code Preloading */}
             {step === 4 && (
               <div className="bg-[#121216] border border-[#27272a] rounded-2xl p-6 shadow-xl space-y-6">
                 <div className="flex items-center justify-between">
@@ -687,7 +929,7 @@ export const ClientBookingPortal: React.FC = () => {
                       Paso 4: Ingresa tus Datos de Contacto
                     </h2>
                     <p className="text-xs text-zinc-400 mt-1">
-                      Te enviaremos la confirmación directa por WhatsApp para asegurar tu cita.
+                      Si ya eres clienta, pon tu código para precargar tus datos automáticamente:
                     </p>
                   </div>
 
@@ -715,11 +957,59 @@ export const ClientBookingPortal: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Quick Lookup with Client Code */}
+                <div className="p-4 bg-gradient-to-r from-[#171722] to-[#14141c] border border-[#d4af37]/40 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-[#fde047] flex items-center gap-1.5">
+                      <Hash className="w-4 h-4 text-[#d4af37]" />
+                      <span>¿Ya visitaste nuestro Spa? Precarga con tu Código:</span>
+                    </label>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ingresa tu Código (ej. JBL-1001 ó 1001) o WhatsApp..."
+                      value={inputClientCode}
+                      onChange={(e) => setInputClientCode(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleLookupClientCode();
+                        }
+                      }}
+                      className="flex-1 px-3.5 py-2 bg-[#121216] border border-[#27272a] focus:border-[#d4af37] rounded-lg text-xs text-white placeholder-zinc-500 font-mono focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleLookupClientCode()}
+                      className="px-4 py-2 bg-[#d4af37] text-black font-bold text-xs rounded-lg hover:brightness-110 flex items-center gap-1 shrink-0"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      <span>Buscar</span>
+                    </button>
+                  </div>
+
+                  {clientLookupSuccess && (
+                    <div className="p-2 bg-emerald-500/15 border border-emerald-500/30 rounded-lg text-xs text-emerald-300 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>{clientLookupSuccess}</span>
+                    </div>
+                  )}
+
+                  {clientLookupError && (
+                    <div className="p-2 bg-amber-500/15 border border-amber-500/30 rounded-lg text-xs text-amber-300 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>{clientLookupError}</span>
+                    </div>
+                  )}
+                </div>
+
                 <form onSubmit={handleSubmitBooking} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-zinc-300 mb-1">
-                        Nombre y Apellido *
+                        Nombre y Apellido Completo *
                       </label>
                       <input
                         type="text"
@@ -784,7 +1074,7 @@ export const ClientBookingPortal: React.FC = () => {
                     </label>
                     <textarea
                       rows={2}
-                      placeholder="Ej. Primera vez realizándome láser, o piel sensible a ciertos ácidos..."
+                      placeholder="Ej. Primera vez realizándome peeling, alérgica al látex o aspirina..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-[#18181d] border border-[#27272a] rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#d4af37]"
@@ -816,31 +1106,59 @@ export const ClientBookingPortal: React.FC = () => {
                     ¡Tu Turno Ha Sido Registrado con Éxito!
                   </h2>
                   <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto">
-                    Gracias por confiar en <strong className="text-[#d4af37]">Jilly Beauty Lab Center</strong>. Tu reserva ya se encuentra agendada en nuestro sistema.
+                    Gracias por confiar en <strong className="text-[#d4af37]">Jilly Beauty Lab Center</strong>. Tu cita ya se encuentra reservada en el sistema.
                   </p>
                 </div>
 
+                {/* Golden Client Code Highlight Banner */}
+                <div className="max-w-md mx-auto p-4 bg-gradient-to-r from-[#d4af37]/20 via-[#aa8421]/20 to-[#d4af37]/15 border-2 border-[#d4af37] rounded-2xl shadow-xl space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-xs font-semibold text-[#fde047]">
+                    <Hash className="w-4 h-4 text-[#d4af37]" />
+                    <span>Tu Código Exclusivo de Clienta es:</span>
+                  </div>
+                  <div className="text-2xl font-mono font-black text-white tracking-widest">
+                    {confirmedBooking.clientCode}
+                  </div>
+                  <p className="text-[11px] text-zinc-300">
+                    Guarda este número para agendar tus próximas citas en un clic y consultar tus tratamientos.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(confirmedBooking.clientCode);
+                        setCopiedCodeNotice(true);
+                        setTimeout(() => setCopiedCodeNotice(false), 2000);
+                      }
+                    }}
+                    className="mt-1 px-3 py-1 bg-black/60 hover:bg-black text-[#fde047] border border-[#d4af37]/50 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+                  >
+                    {copiedCodeNotice ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedCodeNotice ? '¡Código Copiado!' : 'Copiar Código de Clienta'}</span>
+                  </button>
+                </div>
+
                 {/* Booking Voucher Card */}
-                <div className="max-w-md mx-auto bg-[#18181d] border border-[#d4af37]/40 rounded-2xl p-5 text-left space-y-3 font-mono text-xs">
+                <div className="max-w-md mx-auto bg-[#18181d] border border-[#27272a] rounded-2xl p-5 text-left space-y-3 font-mono text-xs">
                   <div className="flex justify-between items-center pb-2 border-b border-[#27272a]">
-                    <span className="text-zinc-500">Código de Reserva:</span>
+                    <span className="text-zinc-500 font-sans">Código de Reserva:</span>
                     <span className="font-bold text-[#d4af37] text-sm">{confirmedBooking.code}</span>
                   </div>
 
                   <div className="space-y-1.5 text-zinc-300">
                     <div className="flex justify-between">
                       <span className="text-zinc-500 font-sans">Cliente:</span>
-                      <span className="font-bold text-white">{confirmedBooking.clientName}</span>
+                      <span className="font-bold text-white font-sans">{confirmedBooking.clientName}</span>
                     </div>
 
                     <div className="flex justify-between">
                       <span className="text-zinc-500 font-sans">Tratamiento:</span>
-                      <span className="text-amber-200">{confirmedBooking.serviceName}</span>
+                      <span className="text-amber-200 font-sans">{confirmedBooking.serviceName}</span>
                     </div>
 
                     <div className="flex justify-between">
                       <span className="text-zinc-500 font-sans">Especialista:</span>
-                      <span>{confirmedBooking.specialistName}</span>
+                      <span className="font-sans">{confirmedBooking.specialistName}</span>
                     </div>
 
                     <div className="flex justify-between">
@@ -881,6 +1199,79 @@ export const ClientBookingPortal: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* Staff Password Modal (Protects internal spa app from public clients) */}
+      {showStaffUnlockModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#121216] border border-[#d4af37]/60 rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-[#252530] mb-4">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-[#d4af37]" />
+                <h3 className="text-sm font-bold text-white font-serif-luxury">
+                  Acceso Personal del Spa
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowStaffUnlockModal(false)}
+                className="text-zinc-400 hover:text-white p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-400 mb-4">
+              Ingresa tus credenciales de colaboradora para abrir el sistema interno de gestión (Citas, Caja, Stock).
+            </p>
+
+            <form onSubmit={handleStaffUnlock} className="space-y-3">
+              <div>
+                <label className="block text-[11px] text-zinc-400 mb-1">Usuario</label>
+                <input
+                  type="text"
+                  required
+                  value={staffUsername}
+                  onChange={(e) => setStaffUsername(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#181820] border border-[#27272a] rounded-lg text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-zinc-400 mb-1">Contraseña</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Contraseña..."
+                  value={staffPassword}
+                  onChange={(e) => setStaffPassword(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#181820] border border-[#27272a] rounded-lg text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              {staffUnlockError && (
+                <div className="p-2 bg-rose-500/15 border border-rose-500/30 text-rose-300 rounded-lg text-xs">
+                  {staffUnlockError}
+                </div>
+              )}
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowStaffUnlockModal(false)}
+                  className="px-3 py-1.5 bg-[#181820] text-zinc-400 rounded-lg text-xs"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#d4af37] text-black font-bold rounded-lg text-xs hover:brightness-110"
+                >
+                  Ingresar al Spa
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-[#27272a] bg-[#0c0c0e] py-8 text-xs text-[#a1a1aa] mt-auto">

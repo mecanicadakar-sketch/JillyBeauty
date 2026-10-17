@@ -85,6 +85,15 @@ export const ALL_APP_PANELS: {
     badgeBg: 'bg-amber-500/10 text-amber-300 border-amber-500/30'
   },
   {
+    id: 'clients',
+    label: 'Fichas de Clientes',
+    shortLabel: 'Clientes',
+    desc: 'Expediente, historial de visitas y datos precargados',
+    icon: Users,
+    color: 'text-pink-400 bg-pink-400/10 border-pink-400/30',
+    badgeBg: 'bg-pink-500/10 text-pink-300 border-pink-500/30'
+  },
+  {
     id: 'admin',
     label: 'Panel Administrador',
     shortLabel: 'Admin',
