@@ -691,7 +691,7 @@ export const StaffAndUsersView: React.FC = () => {
                       {c.totalVisits} visitas
                     </td>
                     <td className="py-3.5 font-mono font-bold text-[#d4af37] text-right">
-                      ${c.totalSpent.toFixed(2)}
+                      Gs. {c.totalSpent.toLocaleString('es-PY')}
                     </td>
                   </tr>
                 ))}

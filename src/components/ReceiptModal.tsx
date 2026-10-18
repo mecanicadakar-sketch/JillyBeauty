@@ -116,10 +116,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
                   <div key={idx} className="text-[11px]">
                     <div className="flex justify-between font-medium">
                       <span className="pr-2">{item.name}</span>
-                      <span className="font-bold">${item.total.toFixed(2)}</span>
+                      <span className="font-bold">Gs. {item.total.toLocaleString('es-PY')}</span>
                     </div>
                     <div className="flex justify-between text-[10px] text-zinc-500">
-                      <span>{item.quantity} x ${item.unitPrice.toFixed(2)} {item.specialistName ? `(${item.specialistName})` : ''}</span>
+                      <span>{item.quantity} x Gs. {item.unitPrice.toLocaleString('es-PY')} {item.specialistName ? `(${item.specialistName})` : ''}</span>
                     </div>
                   </div>
                 ))}
@@ -130,23 +130,23 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             <div className="py-3 border-b border-dashed border-zinc-300 space-y-1 text-[11px]">
               <div className="flex justify-between text-zinc-600">
                 <span>Subtotal:</span>
-                <span>${sale.subtotal.toFixed(2)}</span>
+                <span>Gs. {sale.subtotal.toLocaleString('es-PY')}</span>
               </div>
               {sale.discount > 0 && (
                 <div className="flex justify-between text-emerald-700">
                   <span>Descuento aplicado:</span>
-                  <span>-${sale.discount.toFixed(2)}</span>
+                  <span>-Gs. {sale.discount.toLocaleString('es-PY')}</span>
                 </div>
               )}
               {sale.tax > 0 && (
                 <div className="flex justify-between text-zinc-600">
                   <span>IVA:</span>
-                  <span>${sale.tax.toFixed(2)}</span>
+                  <span>Gs. {sale.tax.toLocaleString('es-PY')}</span>
                 </div>
               )}
               <div className="flex justify-between text-base font-black text-zinc-900 pt-1 border-t border-zinc-200">
                 <span>TOTAL A PAGAR:</span>
-                <span>${sale.total.toFixed(2)}</span>
+                <span>Gs. {sale.total.toLocaleString('es-PY')}</span>
               </div>
             </div>
 

@@ -218,7 +218,7 @@ export const ReportsView: React.FC = () => {
             </span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-[#d4af37] font-mono tracking-tight">
-            ${totalRevenue.toFixed(2)}
+            Gs. {totalRevenue.toLocaleString('es-PY')}
           </div>
           <p className="text-[11px] text-zinc-500 mt-2">
             {totalSalesCount} transacciones procesadas
@@ -237,10 +237,10 @@ export const ReportsView: React.FC = () => {
             </span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">
-            ${netProfit.toFixed(2)}
+            Gs. {netProfit.toLocaleString('es-PY')}
           </div>
           <p className="text-[11px] text-zinc-500 mt-2">
-            Descontando gastos operativos (${totalExpenses.toFixed(2)})
+            Descontando gastos operativos (Gs. {totalExpenses.toLocaleString('es-PY')})
           </p>
           <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 pointer-events-none">
             <TrendingUp className="w-24 h-24 text-white" />
@@ -256,10 +256,10 @@ export const ReportsView: React.FC = () => {
             </span>
           </div>
           <div className="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">
-            ${averageTicket.toFixed(2)}
+            Gs. {averageTicket.toLocaleString('es-PY')}
           </div>
           <p className="text-[11px] text-zinc-500 mt-2">
-            Descuentos otorgados: ${totalDiscounts.toFixed(2)}
+            Descuentos otorgados: Gs. {totalDiscounts.toLocaleString('es-PY')}
           </p>
           <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 pointer-events-none">
             <CreditCard className="w-24 h-24 text-white" />
@@ -277,15 +277,15 @@ export const ReportsView: React.FC = () => {
           <div className="space-y-1 text-xs font-mono pt-1">
             <div className="flex justify-between text-zinc-300">
               <span>Efectivo:</span>
-              <strong className="text-emerald-400">${cashTotal.toFixed(2)}</strong>
+              <strong className="text-emerald-400">Gs. {cashTotal.toLocaleString('es-PY')}</strong>
             </div>
             <div className="flex justify-between text-zinc-300">
               <span>Transferencias:</span>
-              <strong className="text-blue-400">${transferTotal.toFixed(2)}</strong>
+              <strong className="text-blue-400">Gs. {transferTotal.toLocaleString('es-PY')}</strong>
             </div>
             <div className="flex justify-between text-zinc-300">
               <span>Tarjetas:</span>
-              <strong className="text-purple-400">${cardTotal.toFixed(2)}</strong>
+              <strong className="text-purple-400">Gs. {cardTotal.toLocaleString('es-PY')}</strong>
             </div>
           </div>
         </div>
@@ -316,7 +316,7 @@ export const ReportsView: React.FC = () => {
               return (
                 <div key={idx} className="flex flex-col items-center h-full justify-end group">
                   <div className="font-mono text-[11px] font-bold text-white mb-2 opacity-90 group-hover:text-[#d4af37] transition-colors">
-                    ${m.revenue.toLocaleString()}
+                    Gs. {m.revenue.toLocaleString('es-PY')}
                   </div>
 
                   <div className="w-full max-w-[54px] rounded-t-xl overflow-hidden bg-[#1f1f26] relative transition-all group-hover:scale-105" style={{ height: `${heightPercent}%` }}>
@@ -361,7 +361,7 @@ export const ReportsView: React.FC = () => {
                   <div className="flex justify-between text-xs">
                     <span className="font-medium text-zinc-300">{catName}</span>
                     <span className="font-mono font-bold text-white">
-                      ${amount.toFixed(2)} <span className="text-zinc-500 font-normal">({pct.toFixed(1)}%)</span>
+                      Gs. {amount.toLocaleString('es-PY')} <span className="text-zinc-500 font-normal">({pct.toFixed(1)}%)</span>
                     </span>
                   </div>
 
@@ -427,7 +427,7 @@ export const ReportsView: React.FC = () => {
                     </td>
 
                     <td className="py-3 font-mono font-semibold text-white">
-                      ${item.billed.toFixed(2)}
+                      Gs. {item.billed.toLocaleString('es-PY')}
                     </td>
 
                     <td className="py-3 font-mono text-[#d4af37]">
@@ -435,11 +435,11 @@ export const ReportsView: React.FC = () => {
                     </td>
 
                     <td className="py-3 font-mono font-bold text-emerald-400">
-                      ${item.commissionEarned.toFixed(2)}
+                      Gs. {item.commissionEarned.toLocaleString('es-PY')}
                     </td>
 
                     <td className="py-3 font-mono font-bold text-white text-right">
-                      ${item.spaNet.toFixed(2)}
+                      Gs. {item.spaNet.toLocaleString('es-PY')}
                     </td>
                   </tr>
                 ))}

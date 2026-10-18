@@ -95,6 +95,7 @@ export type AppointmentStatus =
 
 export interface Appointment {
   id: string;
+  clientCode?: string;
   clientName: string;
   clientPhone: string;
   clientEmail?: string;

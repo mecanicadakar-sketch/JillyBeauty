@@ -42,6 +42,7 @@ interface AppContextType {
   products: Product[];
   addProduct: (prod: Omit<Product, 'id'>) => void;
   updateProduct: (id: string, updates: Partial<Product>) => void;
+  deleteProduct: (id: string) => void;
   adjustProductStock: (productId: string, quantityChange: number, reason: string, type: 'in' | 'out' | 'cabin_use' | 'adjustment') => void;
   inventoryMovements: InventoryMovement[];
 
@@ -406,6 +407,10 @@ const checkIsClientPortalUrl = (): boolean => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   };
 
+  const deleteProduct = (id: string) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+  };
+
   const adjustProductStock = (
     productId: string, 
     quantityChange: number, 
@@ -433,20 +438,22 @@ const checkIsClientPortalUrl = (): boolean => {
 
   // Appointments Methods
   const addAppointment = (apt: Omit<Appointment, 'id' | 'createdAt'>): Appointment => {
-    const newApt: Appointment = {
-      ...apt,
-      id: `apt-${Date.now()}`,
-      createdAt: new Date().toISOString()
-    };
-    setAppointments(prev => [newApt, ...prev]);
-
-    // Also register or update client record automatically
-    addOrUpdateClient({
+    // Also register or update client record automatically and get their clientCode
+    const savedClient = addOrUpdateClient({
+      clientCode: apt.clientCode,
       name: apt.clientName,
       phone: apt.clientPhone,
       email: apt.clientEmail,
       skinType: (apt.skinType as any) || undefined
     });
+
+    const newApt: Appointment = {
+      ...apt,
+      clientCode: apt.clientCode || savedClient.clientCode,
+      id: `apt-${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    setAppointments(prev => [newApt, ...prev]);
 
     return newApt;
   };
@@ -769,6 +776,7 @@ const checkIsClientPortalUrl = (): boolean => {
         products,
         addProduct,
         updateProduct,
+        deleteProduct,
         adjustProductStock,
         inventoryMovements,
 

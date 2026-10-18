@@ -280,7 +280,7 @@ export const POSCashierView: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Responsable actual: <strong className="text-zinc-200">{currentUser.name}</strong> · Base inicial: ${cashShift.openingAmount.toFixed(2)}
+              Responsable actual: <strong className="text-zinc-200">{currentUser.name}</strong> · Base inicial: Gs. {cashShift.openingAmount.toLocaleString('es-PY')}
             </p>
           </div>
         </div>
@@ -290,14 +290,14 @@ export const POSCashierView: React.FC = () => {
           <div className="px-3 py-2 rounded-xl bg-[#18181d] border border-[#27272a] text-xs">
             <span className="text-zinc-400 block text-[10px]">Efectivo en Gaveta</span>
             <span className="font-bold text-[#d4af37] text-sm font-mono">
-              ${expectedCashInDrawer.toFixed(2)}
+              Gs. {expectedCashInDrawer.toLocaleString('es-PY')}
             </span>
           </div>
 
           <div className="px-3 py-2 rounded-xl bg-[#18181d] border border-[#27272a] text-xs">
             <span className="text-zinc-400 block text-[10px]">Tarjetas / Transferencias</span>
             <span className="font-bold text-blue-400 text-sm font-mono">
-              ${(cashShift.cardSales + cashShift.transferSales).toFixed(2)}
+              Gs. {(cashShift.cardSales + cashShift.transferSales).toLocaleString('es-PY')}
             </span>
           </div>
 
@@ -355,7 +355,7 @@ export const POSCashierView: React.FC = () => {
           <span>2. Ticket ({cartItems.length})</span>
           {cartItems.length > 0 && (
             <span className="text-[10px] font-bold bg-black text-[#d4af37] px-1.5 py-0.2 rounded-full">
-              ${total.toFixed(2)}
+              Gs. {total.toLocaleString('es-PY')}
             </span>
           )}
         </button>
@@ -424,7 +424,7 @@ export const POSCashierView: React.FC = () => {
                               {srv.categoryLabel}
                             </span>
                             <span className="text-xs font-mono font-bold text-white group-hover:text-[#d4af37]">
-                              ${srv.price.toFixed(2)}
+                              Gs. {srv.price.toLocaleString('es-PY')}
                             </span>
                           </div>
                           <h4 className="text-xs font-semibold text-white mt-1 group-hover:text-amber-200 line-clamp-1">
@@ -468,7 +468,7 @@ export const POSCashierView: React.FC = () => {
                               SKU: {prod.sku}
                             </span>
                             <span className="text-xs font-mono font-bold text-white group-hover:text-[#d4af37]">
-                              ${prod.salePrice.toFixed(2)}
+                              Gs. {prod.salePrice.toLocaleString('es-PY')}
                             </span>
                           </div>
                           <h4 className="text-xs font-semibold text-white mt-1 group-hover:text-amber-200 line-clamp-1">
@@ -507,7 +507,7 @@ export const POSCashierView: React.FC = () => {
                   </span>
                   <span className="text-sm font-semibold">Ver Ticket de Cobro</span>
                 </div>
-                <span className="font-mono text-sm tracking-tight">${total.toFixed(2)} &rarr;</span>
+                <span className="font-mono text-sm tracking-tight">Gs. {total.toLocaleString('es-PY')} &rarr;</span>
               </button>
             </div>
           )}
@@ -689,7 +689,7 @@ export const POSCashierView: React.FC = () => {
                         {item.name}
                       </span>
                       <span className="font-mono font-bold text-white shrink-0">
-                        ${item.total.toFixed(2)}
+                        Gs. {item.total.toLocaleString('es-PY')}
                       </span>
                     </div>
 
@@ -758,25 +758,25 @@ export const POSCashierView: React.FC = () => {
             <div className="py-3 space-y-1.5 text-xs border-b border-[#27272a]">
               <div className="flex justify-between text-zinc-400">
                 <span>Subtotal:</span>
-                <span className="font-mono text-zinc-200">${subtotal.toFixed(2)}</span>
+                <span className="font-mono text-zinc-200">Gs. {subtotal.toLocaleString('es-PY')}</span>
               </div>
 
               <div className="flex items-center justify-between text-zinc-400">
-                <span>Descuento ($):</span>
+                <span>Descuento (Gs.):</span>
                 <input
                   type="number"
                   min="0"
-                  step="0.5"
+                  step="100"
                   value={discount === 0 ? '' : discount}
-                  placeholder="0.00"
+                  placeholder="0"
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  className="w-20 px-2 py-0.5 bg-[#18181d] border border-[#27272a] rounded text-right font-mono text-xs text-emerald-400 focus:outline-none focus:border-[#d4af37]"
+                  className="w-24 px-2 py-0.5 bg-[#18181d] border border-[#27272a] rounded text-right font-mono text-xs text-emerald-400 focus:outline-none focus:border-[#d4af37]"
                 />
               </div>
 
               <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-[#27272a]">
                 <span>TOTAL A COBRAR:</span>
-                <span className="text-[#d4af37] font-mono">${total.toFixed(2)}</span>
+                <span className="text-[#d4af37] font-mono">Gs. {total.toLocaleString('es-PY')}</span>
               </div>
             </div>
 
@@ -819,15 +819,15 @@ export const POSCashierView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-400">Efectivo recibido:</span>
                     <div className="relative">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">Gs.</span>
                       <input
                         type="number"
                         min="0"
-                        step="0.5"
-                        placeholder={total.toFixed(2)}
+                        step="100"
+                        placeholder={total.toLocaleString('es-PY')}
                         value={cashReceived}
                         onChange={(e) => setCashReceived(e.target.value)}
-                        className="w-24 pl-5 pr-2 py-1 bg-[#121216] border border-[#27272a] rounded text-right font-mono text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        className="w-28 pl-7 pr-2 py-1 bg-[#121216] border border-[#27272a] rounded text-right font-mono text-xs text-white focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
@@ -835,7 +835,7 @@ export const POSCashierView: React.FC = () => {
                     <div className="flex items-center justify-between pt-1 border-t border-zinc-800">
                       <span className="text-zinc-400">Cambio / Vuelto:</span>
                       <span className={`font-mono font-bold ${changeDue >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        ${changeDue.toFixed(2)}
+                        Gs. {changeDue.toLocaleString('es-PY')}
                       </span>
                     </div>
                   )}
@@ -863,7 +863,7 @@ export const POSCashierView: React.FC = () => {
               className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#e5c158] to-[#aa8421] text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-lg shadow-[#d4af37]/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <Check className="w-4 h-4 stroke-[2.5]" />
-              <span>Cobrar ${total.toFixed(2)} y Generar Ticket</span>
+              <span>Cobrar Gs. {total.toLocaleString('es-PY')} y Generar Ticket</span>
             </button>
           </div>
         </div>
@@ -881,7 +881,7 @@ export const POSCashierView: React.FC = () => {
               <span>{cartItems.length} {cartItems.length === 1 ? 'ítem' : 'ítems'} en ticket</span>
             </div>
             <div className="flex items-center gap-1.5 font-mono text-sm">
-              <span>${total.toFixed(2)}</span>
+              <span>Gs. {total.toLocaleString('es-PY')}</span>
               <span className="font-sans text-xs underline font-bold ml-1">Ver y Cobrar &rarr;</span>
             </div>
           </button>
@@ -938,7 +938,7 @@ export const POSCashierView: React.FC = () => {
                     </span>
                   </td>
                   <td className="py-3 font-mono font-bold text-white">
-                    ${sale.total.toFixed(2)}
+                    Gs. {sale.total.toLocaleString('es-PY')}
                   </td>
                   <td className="py-3 text-right">
                     <button
@@ -968,7 +968,7 @@ export const POSCashierView: React.FC = () => {
               Ingrese el monto base o fondo de cambio en efectivo con el que inicia la jornada.
             </p>
             <div className="mb-4">
-              <label className="block text-xs text-zinc-300 mb-1">Monto Inicial en Efectivo ($)</label>
+              <label className="block text-xs text-zinc-300 mb-1">Monto Inicial en Efectivo (Gs.)</label>
               <input
                 type="number"
                 min="0"
@@ -1011,7 +1011,7 @@ export const POSCashierView: React.FC = () => {
             </p>
             <div className="space-y-3 mb-4">
               <div>
-                <label className="block text-xs text-zinc-300 mb-1">Monto ($)</label>
+                <label className="block text-xs text-zinc-300 mb-1">Monto (Gs.)</label>
                 <input
                   type="number"
                   min="0.5"
@@ -1071,24 +1071,24 @@ export const POSCashierView: React.FC = () => {
             <div className="p-3 bg-[#18181d] rounded-xl space-y-1.5 text-xs text-zinc-300 mb-4 border border-[#27272a]">
               <div className="flex justify-between">
                 <span>Base inicial:</span>
-                <span className="font-mono">${cashShift.openingAmount.toFixed(2)}</span>
+                <span className="font-mono">Gs. {cashShift.openingAmount.toLocaleString('es-PY')}</span>
               </div>
               <div className="flex justify-between text-emerald-400">
                 <span>Ventas en Efectivo:</span>
-                <span className="font-mono">+${cashShift.cashSales.toFixed(2)}</span>
+                <span className="font-mono">+Gs. {cashShift.cashSales.toLocaleString('es-PY')}</span>
               </div>
               <div className="flex justify-between text-rose-400">
                 <span>Gastos registrados:</span>
-                <span className="font-mono">-${cashShift.expenses.toFixed(2)}</span>
+                <span className="font-mono">-Gs. {cashShift.expenses.toLocaleString('es-PY')}</span>
               </div>
               <div className="flex justify-between font-bold text-white pt-1 border-t border-zinc-800">
                 <span>Efectivo Teórico Esperado:</span>
-                <span className="font-mono text-[#d4af37]">${expectedCashInDrawer.toFixed(2)}</span>
+                <span className="font-mono text-[#d4af37]">Gs. {expectedCashInDrawer.toLocaleString('es-PY')}</span>
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block text-xs text-zinc-300 mb-1">Efectivo Físico Contado en Gaveta ($)</label>
+              <label className="block text-xs text-zinc-300 mb-1">Efectivo Físico Contado en Gaveta (Gs.)</label>
               <input
                 type="number"
                 min="0"

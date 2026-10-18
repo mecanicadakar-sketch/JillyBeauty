@@ -474,7 +474,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
             <Receipt className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-400">
-            ${totalRevenueFromClients.toFixed(2)}
+            Gs. {totalRevenueFromClients.toLocaleString('es-PY')}
           </div>
           <div className="text-[11px] text-zinc-500 mt-0.5">
             Facturado a clientas registradas
@@ -664,7 +664,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="text-zinc-400">Consumo Acumulado:</span>
                       <span className="font-bold text-emerald-400 font-mono">
-                        ${(client.totalSpent || 0).toFixed(2)}
+                        Gs. {(client.totalSpent || 0).toLocaleString('es-PY')}
                       </span>
                     </div>
 
@@ -827,7 +827,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
                 >
                   {services.map(s => (
                     <option key={s.id} value={s.id}>
-                      {s.name} (${s.price.toFixed(2)})
+                      {s.name} (Gs. {s.price.toLocaleString('es-PY')})
                     </option>
                   ))}
                   <option value="custom">+ Otro Tratamiento / Protocolo Personalizado</option>
@@ -880,7 +880,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                    Precio Cobrado ($)
+                    Precio Cobrado (Gs.)
                   </label>
                   <input
                     type="number"
@@ -1272,7 +1272,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
               </div>
               <div className="p-3 bg-[#17171e] border border-[#27272a] rounded-xl text-center">
                 <div className="text-[10px] text-zinc-400">Total Consumido</div>
-                <div className="text-base font-bold text-emerald-400 font-mono">${(viewHistoryClient.totalSpent || 0).toFixed(2)}</div>
+                <div className="text-base font-bold text-emerald-400 font-mono">Gs. {(viewHistoryClient.totalSpent || 0).toLocaleString('es-PY')}</div>
               </div>
               <div className="p-3 bg-[#17171e] border border-[#27272a] rounded-xl text-center">
                 <div className="text-[10px] text-zinc-400">Tipo de Piel</div>
@@ -1358,7 +1358,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
                           </div>
                           {tr.price !== undefined && (
                             <span className="font-mono font-bold text-emerald-400 text-xs bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30">
-                              ${tr.price.toFixed(2)}
+                              Gs. {tr.price.toLocaleString('es-PY')}
                             </span>
                           )}
                         </div>
@@ -1405,7 +1405,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
                           )}
                         </div>
                         <div className="text-right">
-                          <span className="font-mono font-bold text-emerald-400">${apt.servicePrice.toFixed(2)}</span>
+                          <span className="font-mono font-bold text-emerald-400">Gs. {apt.servicePrice.toLocaleString('es-PY')}</span>
                           <div className="text-[10px] uppercase text-zinc-400">{apt.status}</div>
                         </div>
                       </div>
@@ -1436,7 +1436,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className="font-mono font-bold text-emerald-400">${sale.total.toFixed(2)}</span>
+                          <span className="font-mono font-bold text-emerald-400">Gs. {sale.total.toLocaleString('es-PY')}</span>
                           <div className="text-[10px] text-zinc-400">{sale.items.length} items</div>
                         </div>
                       </div>

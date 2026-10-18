@@ -541,6 +541,7 @@ const getTodayDate = () => {
 export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'apt-1',
+    clientCode: 'JBL-1001',
     clientName: 'Carolina Benítez',
     clientPhone: '0991234888',
     clientEmail: 'carolina.b@gmail.com',
@@ -560,6 +561,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt-2',
+    clientCode: 'JBL-1002',
     clientName: 'Gabriela Mendoza',
     clientPhone: '0984433221',
     clientEmail: 'gaby.mendoza@hotmail.com',
@@ -578,6 +580,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt-3',
+    clientCode: 'JBL-1003',
     clientName: 'Lorena Zambrano',
     clientPhone: '0997788990',
     serviceId: 'srv-1',
@@ -595,6 +598,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt-4',
+    clientCode: 'JBL-1004',
     clientName: 'Daniela Salazar',
     clientPhone: '0993322110',
     serviceId: 'srv-2',
@@ -612,6 +616,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt-5',
+    clientCode: 'JBL-1005',
     clientName: 'María Fernanda Vega',
     clientPhone: '0985544332',
     serviceId: 'srv-12',

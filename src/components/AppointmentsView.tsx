@@ -14,7 +14,8 @@ import {
   Search, 
   Check, 
   AlertCircle,
-  Plus
+  Plus,
+  Hash
 } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../types';
 
@@ -25,6 +26,7 @@ interface AppointmentsViewProps {
 export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNewAppointmentClick }) => {
   const { 
     appointments, 
+    clients,
     updateAppointmentStatus, 
     deleteAppointment, 
     staffList, 
@@ -38,6 +40,32 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNewAppoint
   const [selectedSpecialist, setSelectedSpecialist] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Helper to resolve client code for an appointment
+  const getAppointmentClientCode = (apt: Appointment): string => {
+    if (apt.clientCode) return apt.clientCode;
+
+    // Check if code was written into appointment notes
+    if (apt.notes) {
+      const match = apt.notes.match(/JBL-\d+/i);
+      if (match) return match[0].toUpperCase();
+    }
+
+    // Match with clients database by phone or name
+    const cleanAptPhone = apt.clientPhone.replace(/\D/g, '');
+    const clientMatch = clients.find(c => {
+      const cleanCliPhone = c.phone.replace(/\D/g, '');
+      const phoneMatch = cleanAptPhone.length >= 7 && cleanCliPhone.length >= 7 && (cleanCliPhone.includes(cleanAptPhone) || cleanAptPhone.includes(cleanCliPhone));
+      const nameMatch = c.name.trim().toLowerCase() === apt.clientName.trim().toLowerCase();
+      return phoneMatch || nameMatch;
+    });
+
+    if (clientMatch?.clientCode) {
+      return clientMatch.clientCode;
+    }
+
+    return 'JBL-1001';
+  };
 
   // Filter appointments
   const filteredAppointments = appointments.filter((apt) => {
@@ -56,10 +84,12 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNewAppoint
     // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
+      const code = getAppointmentClientCode(apt).toLowerCase();
+      const matchCode = code.includes(q) || (apt.notes && apt.notes.toLowerCase().includes(q));
       const matchClient = apt.clientName.toLowerCase().includes(q);
       const matchPhone = apt.clientPhone.includes(q);
       const matchService = apt.serviceName.toLowerCase().includes(q);
-      if (!matchClient && !matchPhone && !matchService) return false;
+      if (!matchClient && !matchPhone && !matchService && !matchCode) return false;
     }
     return true;
   }).sort((a, b) => a.time.localeCompare(b.time));
@@ -281,12 +311,22 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNewAppoint
                   <div className="py-3.5">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Client Code Badge right beside client name */}
+                          <span 
+                            className="font-mono text-[#fde047] font-bold text-[11px] bg-[#d4af37]/20 border border-[#d4af37]/50 px-2 py-0.5 rounded-md shrink-0 shadow-sm flex items-center gap-1"
+                            title={`Código de Clienta: ${getAppointmentClientCode(apt)}`}
+                          >
+                            <Hash className="w-3 h-3 text-[#d4af37]" />
+                            <span>{getAppointmentClientCode(apt)}</span>
+                          </span>
+
                           <h4 className="text-sm font-bold text-white group-hover:text-[#d4af37] transition-colors">
                             {apt.clientName}
                           </h4>
+
                           {apt.skinType && (
-                            <span className="text-[10px] text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded">
+                            <span className="text-[10px] text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700/50">
                               Piel {apt.skinType}
                             </span>
                           )}
@@ -294,13 +334,13 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNewAppoint
 
                         <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
                           <Phone className="w-3.5 h-3.5 text-zinc-500" />
-                          <span>{apt.clientPhone}</span>
+                          <span className="font-mono">{apt.clientPhone}</span>
                         </div>
                       </div>
 
                       <div className="text-right shrink-0">
                         <div className="text-base font-bold text-white font-mono">
-                          ${apt.servicePrice.toFixed(2)}
+                          Gs. {apt.servicePrice.toLocaleString('es-PY')}
                         </div>
                         <div className="text-[10px] text-emerald-400 font-medium">
                           Tarifa Base

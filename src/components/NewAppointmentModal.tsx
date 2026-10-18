@@ -416,7 +416,7 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
                 >
                   {services.filter(s => s.active).map(s => (
                     <option key={s.id} value={s.id}>
-                      {s.name} (${s.price.toFixed(2)} - {s.durationMin} min)
+                      {s.name} (Gs. {s.price.toLocaleString('es-PY')} - {s.durationMin} min)
                     </option>
                   ))}
                 </select>
@@ -498,7 +498,7 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
           {/* Modal Footer */}
           <div className="flex items-center justify-between pt-2 border-t border-[#27272a]">
             <div className="text-xs text-zinc-400">
-              Valor estimado: <span className="font-bold text-emerald-400 font-mono">${selectedService?.price.toFixed(2)}</span>
+              Valor estimado: <span className="font-bold text-emerald-400 font-mono">Gs. {selectedService ? selectedService.price.toLocaleString('es-PY') : '0'}</span>
             </div>
 
             <div className="flex items-center gap-2">

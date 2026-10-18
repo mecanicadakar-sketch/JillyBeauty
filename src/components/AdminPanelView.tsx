@@ -296,7 +296,7 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ initialSubTab = 
             }`}
           >
             <Package className="w-4 h-4" />
-            <span>Ajuste de Stock & Insumos</span>
+            <span>Ajuste de Stock, Precios & Insumos</span>
             <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
               adminTab === 'inventory' ? 'bg-black/30 text-black' : 'bg-[#d4af37]/20 text-[#fde047]'
             }`}>

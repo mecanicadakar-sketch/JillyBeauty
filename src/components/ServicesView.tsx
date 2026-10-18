@@ -269,7 +269,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ onScheduleService })
               <div>
                 <span className="text-[10px] text-zinc-500 block">Tarifa por sesión</span>
                 <span className="text-xl font-bold font-mono text-white group-hover:text-[#d4af37] transition-colors">
-                  ${srv.price.toFixed(2)}
+                  Gs. {srv.price.toLocaleString('es-PY')}
                 </span>
               </div>
 
@@ -365,7 +365,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ onScheduleService })
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-zinc-300 mb-1">Precio ($) *</label>
+                  <label className="block text-xs text-zinc-300 mb-1">Precio (Gs.) *</label>
                   <input
                     type="number"
                     min="1"

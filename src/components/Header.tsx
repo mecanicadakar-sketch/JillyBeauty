@@ -113,8 +113,8 @@ export const Header: React.FC = () => {
                   {cashShift.status === 'open' ? 'Caja Abierta' : 'Caja Cerrada'}
                 </span>
                 {cashShift.status === 'open' && (
-                  <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300">
-                    ${(cashShift.openingAmount + cashShift.cashSales - cashShift.expenses).toFixed(2)}
+                  <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300 font-mono">
+                    Gs. {(cashShift.openingAmount + cashShift.cashSales - cashShift.expenses).toLocaleString('es-PY')}
                   </span>
                 )}
               </button>

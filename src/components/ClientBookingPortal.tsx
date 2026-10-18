@@ -261,7 +261,7 @@ export const ClientBookingPortal: React.FC = () => {
       `📅 *Fecha:* ${confirmedBooking.date}\n` +
       `⏰ *Hora:* ${confirmedBooking.time}\n` +
       `👩‍⚕️ *Especialista:* ${confirmedBooking.specialistName}\n` +
-      `💵 *Tarifa:* $${confirmedBooking.price.toFixed(2)}\n\n` +
+      `💵 *Tarifa:* Gs. ${confirmedBooking.price.toLocaleString('es-PY')}\n\n` +
       `Por favor confírmenme el turno. ¡Muchas gracias!`
     );
 
@@ -713,7 +713,7 @@ export const ClientBookingPortal: React.FC = () => {
                               {srv.categoryLabel}
                             </span>
                             <span className="text-sm font-mono font-bold text-white group-hover:text-[#d4af37]">
-                              ${srv.price.toFixed(2)}
+                              Gs. {srv.price.toLocaleString('es-PY')}
                             </span>
                           </div>
 
@@ -952,7 +952,7 @@ export const ClientBookingPortal: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-bold font-mono text-white">
-                      ${selectedService?.price.toFixed(2)}
+                      Gs. {selectedService ? selectedService.price.toLocaleString('es-PY') : '0'}
                     </div>
                   </div>
                 </div>
@@ -1168,7 +1168,7 @@ export const ClientBookingPortal: React.FC = () => {
 
                     <div className="flex justify-between pt-2 border-t border-zinc-800 text-sm font-bold text-white">
                       <span className="font-sans">Tarifa por sesión:</span>
-                      <span className="text-[#d4af37]">${confirmedBooking.price.toFixed(2)}</span>
+                      <span className="text-[#d4af37]">Gs. {confirmedBooking.price.toLocaleString('es-PY')}</span>
                     </div>
                   </div>
                 </div>
