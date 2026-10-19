@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jilly Beauty Lab</title>
+    <script>
+      // Redirigir rutas SPA a index.html preservando la ruta y parámetros
+      var pathname = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      
+      // Si la ruta contiene clientes o turnos, pasar como parámetro si es necesario
+      if (pathname.indexOf('/clientes') !== -1) {
+        window.location.replace('/?portal=clientes' + (hash ? hash : ''));
+      } else {
+        window.location.replace('/' + (search ? search : '') + (hash ? hash : ''));
+      }
+    </script>
+  </head>
+  <body style="background-color: #09090b; color: #f4f4f5; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+    <div style="text-align: center;">
+      <p style="color: #d4af37; font-size: 16px;">Cargando Jilly Beauty Lab...</p>
+    </div>
+  </body>
+</html>

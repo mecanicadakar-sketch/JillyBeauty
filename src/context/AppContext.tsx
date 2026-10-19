@@ -188,11 +188,16 @@ const checkIsClientPortalUrl = (): boolean => {
   const hash = window.location.hash.toLowerCase();
   return (
     path === '/clientes' || 
+    path === '/clientes.html' ||
     path.startsWith('/clientes/') || 
+    path.includes('/clientes') ||
     path === '/portal' || 
+    path === '/portal.html' ||
     path.startsWith('/portal/') ||
+    path.includes('/portal') ||
     search.includes('portal=clientes') || 
     search.includes('mode=clientes') || 
+    search.includes('clientes') ||
     hash.includes('clientes') ||
     hash.includes('portal')
   );

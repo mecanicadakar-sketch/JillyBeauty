@@ -38,6 +38,7 @@ import {
 import { User, UserRole, Client, AppPanel } from '../types';
 import { StaffPhotoUploader } from './StaffPhotoUploader';
 import { compressAndResizeImage } from '../utils/image';
+import { FormattedNumberInput } from './FormattedNumberInput';
 
 export const ALL_APP_PANELS: {
   id: AppPanel;
@@ -127,6 +128,8 @@ export const StaffAndUsersView: React.FC = () => {
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
   const [showEditStaffModal, setShowEditStaffModal] = useState(false);
   const [selectedStaffForEdit, setSelectedStaffForEdit] = useState<User | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<User | null>(null);
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState('');
 
   const [staffName, setStaffName] = useState('');
   const [staffUsername, setStaffUsername] = useState('');
@@ -254,6 +257,18 @@ export const StaffAndUsersView: React.FC = () => {
       isAdminAccess: false
     });
     setShowAddStaffModal(true);
+  };
+
+  const handleConfirmDeleteStaff = () => {
+    if (!staffToDelete) return;
+    const deletedName = staffToDelete.name;
+    deleteStaff(staffToDelete.id);
+    setStaffToDelete(null);
+    if (selectedStaffForEdit?.id === staffToDelete.id) {
+      setShowEditStaffModal(false);
+    }
+    setDeleteSuccessMessage(`✓ Colaborador "${deletedName}" eliminado correctamente del equipo.`);
+    setTimeout(() => setDeleteSuccessMessage(''), 4500);
   };
 
   const handleCreateStaff = (e: React.FormEvent) => {
@@ -463,6 +478,13 @@ export const StaffAndUsersView: React.FC = () => {
             </button>
           </div>
 
+          {deleteSuccessMessage && (
+            <div className="p-3 bg-emerald-500/15 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 font-semibold flex items-center gap-2 animate-in fade-in">
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{deleteSuccessMessage}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {staffList.map((user) => {
               const badge = getRoleLabel(user.role);
@@ -616,17 +638,14 @@ export const StaffAndUsersView: React.FC = () => {
                         </button>
                       )}
 
-                      {user.role !== 'admin' && (
+                      {!isCurrent && (
                         <button
-                          onClick={() => {
-                            if (confirm(`¿Eliminar colaborador ${user.name}?`)) {
-                              deleteStaff(user.id);
-                            }
-                          }}
-                          className="p-1.5 text-zinc-500 hover:text-rose-400"
-                          title="Eliminar colaborador"
+                          type="button"
+                          onClick={() => setStaffToDelete(user)}
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                          title={`Eliminar colaborador ${user.name}`}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
@@ -942,12 +961,12 @@ export const StaffAndUsersView: React.FC = () => {
 
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Comisión por Servicios (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
+                  <FormattedNumberInput
+                    min={0}
+                    max={100}
+                    suffix={<span className="text-zinc-500 font-bold text-xs">%</span>}
                     value={staffCommission}
-                    onChange={(e) => setStaffCommission(parseInt(e.target.value) || 0)}
+                    onChange={(val) => setStaffCommission(val)}
                     className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
@@ -1177,12 +1196,12 @@ export const StaffAndUsersView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Comisión (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
+                  <FormattedNumberInput
+                    min={0}
+                    max={100}
+                    suffix={<span className="text-zinc-500 font-bold text-xs">%</span>}
                     value={staffCommission}
-                    onChange={(e) => setStaffCommission(parseInt(e.target.value) || 0)}
+                    onChange={(val) => setStaffCommission(val)}
                     className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
@@ -1197,20 +1216,35 @@ export const StaffAndUsersView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEditStaffModal(false)}
-                  className="px-4 py-2 bg-[#18181d] text-zinc-300 text-xs rounded-xl"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-semibold text-xs rounded-xl hover:brightness-110"
-                >
-                  Guardar Cambios
-                </button>
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-2 pt-3 border-t border-[#27272a]">
+                <div>
+                  {selectedStaffForEdit.id !== currentUser.id && (
+                    <button
+                      type="button"
+                      onClick={() => setStaffToDelete(selectedStaffForEdit)}
+                      className="w-full sm:w-auto px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Eliminar Colaborador</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditStaffModal(false)}
+                    className="w-full sm:w-auto px-4 py-2 bg-[#18181d] text-zinc-300 hover:text-white text-xs rounded-xl"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-semibold text-xs rounded-xl hover:brightness-110"
+                  >
+                    Guardar Cambios
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -1305,6 +1339,64 @@ export const StaffAndUsersView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Confirm Delete Staff */}
+      {staffToDelete && (
+        <div className="fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#121216] border border-rose-500/40 rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white font-serif-luxury">
+                  ¿Eliminar Colaborador?
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Esta acción es irreversible
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#171720] border border-[#272734] space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400">Colaborador:</span>
+                <span className="font-bold text-white text-sm">{staffToDelete.name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400">Usuario:</span>
+                <span className="font-mono text-zinc-300">@{staffToDelete.username}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400">Rol / Especialidad:</span>
+                <span className="text-[#d4af37] font-semibold">{staffToDelete.specialty}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              ¿Confirma que desea eliminar permanentemente a <strong>{staffToDelete.name}</strong> del equipo de Jilly Beauty Lab? Se revocarán todas sus credenciales de acceso de forma inmediata.
+            </p>
+
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-[#27272a]">
+              <button
+                type="button"
+                onClick={() => setStaffToDelete(null)}
+                className="w-full sm:w-auto px-4 py-2 bg-[#1a1a22] text-zinc-300 hover:text-white rounded-xl text-xs font-semibold transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteStaff}
+                className="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold rounded-xl text-xs shadow-lg shadow-rose-900/30 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Sí, Eliminar Definitivamente</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

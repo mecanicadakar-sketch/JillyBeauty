@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { SaleItem, PaymentMethod, Service, Product } from '../types';
 import { ReceiptModal } from './ReceiptModal';
+import { FormattedNumberInput } from './FormattedNumberInput';
 
 export const POSCashierView: React.FC = () => {
   const { 
@@ -763,15 +764,14 @@ export const POSCashierView: React.FC = () => {
 
               <div className="flex items-center justify-between text-zinc-400">
                 <span>Descuento (Gs.):</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="100"
-                  value={discount === 0 ? '' : discount}
-                  placeholder="0"
-                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  className="w-24 px-2 py-0.5 bg-[#18181d] border border-[#27272a] rounded text-right font-mono text-xs text-emerald-400 focus:outline-none focus:border-[#d4af37]"
-                />
+                <div className="w-28">
+                  <FormattedNumberInput
+                    value={discount}
+                    placeholder="0"
+                    onChange={(val) => setDiscount(val)}
+                    className="w-full px-2 py-0.5 bg-[#18181d] border border-[#27272a] rounded text-right font-mono text-xs text-emerald-400 focus:outline-none focus:border-[#d4af37]"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-[#27272a]">
@@ -818,16 +818,13 @@ export const POSCashierView: React.FC = () => {
                 <div className="p-2.5 bg-[#18181d] border border-[#27272a] rounded-xl space-y-2 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-400">Efectivo recibido:</span>
-                    <div className="relative">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">Gs.</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="100"
+                    <div className="w-36">
+                      <FormattedNumberInput
+                        prefix={<span className="text-zinc-500 text-xs font-bold">Gs.</span>}
                         placeholder={total.toLocaleString('es-PY')}
                         value={cashReceived}
-                        onChange={(e) => setCashReceived(e.target.value)}
-                        className="w-28 pl-7 pr-2 py-1 bg-[#121216] border border-[#27272a] rounded text-right font-mono text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        onChange={(val) => setCashReceived(val > 0 ? String(val) : '')}
+                        className="w-full pl-8 pr-2 py-1 bg-[#121216] border border-[#27272a] rounded text-right font-mono text-xs text-white focus:outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
@@ -969,13 +966,11 @@ export const POSCashierView: React.FC = () => {
             </p>
             <div className="mb-4">
               <label className="block text-xs text-zinc-300 mb-1">Monto Inicial en Efectivo (Gs.)</label>
-              <input
-                type="number"
-                min="0"
-                step="5"
+              <FormattedNumberInput
+                prefix={<span className="text-[#d4af37] font-bold text-xs">Gs.</span>}
                 value={openingAmountInput}
-                onChange={(e) => setOpeningAmountInput(e.target.value)}
-                className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-sm font-mono text-white focus:outline-none focus:border-[#d4af37]"
+                onChange={(val) => setOpeningAmountInput(String(val))}
+                className="w-full pl-9 pr-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-sm font-mono text-white focus:outline-none focus:border-[#d4af37]"
               />
             </div>
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
@@ -1012,14 +1007,12 @@ export const POSCashierView: React.FC = () => {
             <div className="space-y-3 mb-4">
               <div>
                 <label className="block text-xs text-zinc-300 mb-1">Monto (Gs.)</label>
-                <input
-                  type="number"
-                  min="0.5"
-                  step="0.5"
-                  placeholder="Ej. 15.00"
+                <FormattedNumberInput
+                  prefix={<span className="text-zinc-400 font-bold text-xs">Gs.</span>}
+                  placeholder="0"
                   value={expenseAmountInput}
-                  onChange={(e) => setExpenseAmountInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-sm font-mono text-white focus:outline-none focus:border-[#d4af37]"
+                  onChange={(val) => setExpenseAmountInput(String(val))}
+                  className="w-full pl-9 pr-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-sm font-mono text-white focus:outline-none focus:border-[#d4af37]"
                 />
               </div>
               <div>
@@ -1089,14 +1082,12 @@ export const POSCashierView: React.FC = () => {
 
             <div className="mb-4">
               <label className="block text-xs text-zinc-300 mb-1">Efectivo Físico Contado en Gaveta (Gs.)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.5"
-                placeholder={expectedCashInDrawer.toFixed(2)}
+              <FormattedNumberInput
+                prefix={<span className="text-[#d4af37] font-bold text-xs">Gs.</span>}
+                placeholder={expectedCashInDrawer.toLocaleString('es-PY')}
                 value={countedCashInput}
-                onChange={(e) => setCountedCashInput(e.target.value)}
-                className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-sm font-mono text-white focus:outline-none focus:border-[#d4af37]"
+                onChange={(val) => setCountedCashInput(String(val))}
+                className="w-full pl-9 pr-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-sm font-mono text-white focus:outline-none focus:border-[#d4af37]"
               />
             </div>
 

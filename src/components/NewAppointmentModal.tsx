@@ -18,10 +18,13 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Appointment, Client, Service } from '../types';
+import { checkScheduleConflict, getSlotsAvailability, STANDARD_HOURLY_SLOTS } from '../utils/schedule';
 
 interface NewAppointmentModalProps {
   onClose: () => void;
   initialDate?: string;
+  initialTime?: string;
+  initialSpecialistId?: string;
   initialService?: Service | null;
   initialClient?: Client | null;
 }
@@ -29,14 +32,16 @@ interface NewAppointmentModalProps {
 export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ 
   onClose, 
   initialDate,
+  initialTime,
+  initialSpecialistId,
   initialService,
   initialClient 
 }) => {
-  const { services, staffList, clients, addAppointment, currentUser } = useApp();
+  const { services, staffList, clients, appointments, addAppointment, currentUser } = useApp();
 
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(initialDate || today);
-  const [time, setTime] = useState('10:00');
+  const [time, setTime] = useState(initialTime || '10:00');
   
   // Client Code input & quick lookup
   const [codeQuery, setCodeQuery] = useState('');
@@ -55,12 +60,26 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
   // Service & specialist
   const [serviceId, setServiceId] = useState(initialService?.id || services[0]?.id || '');
   const [specialistId, setSpecialistId] = useState(
-    currentUser.role === 'specialist' ? currentUser.id : (staffList.find(s => s.role === 'specialist')?.id || staffList[0]?.id)
+    initialSpecialistId ||
+    (currentUser.role === 'specialist' ? currentUser.id : (staffList.find(s => s.role === 'specialist')?.id || staffList[0]?.id))
   );
   const [notes, setNotes] = useState(initialClient?.notes ? `[Ficha previa: ${initialClient.notes}] ` : '');
 
   const selectedService = services.find(s => s.id === serviceId) || services[0];
   const selectedSpecialist = staffList.find(s => s.id === specialistId) || staffList[0];
+
+  // Schedule collision verification
+  const conflict = checkScheduleConflict(
+    appointments,
+    date,
+    time,
+    selectedService?.durationMin || 30,
+    specialistId
+  );
+
+  const daySlots = getSlotsAvailability(appointments, date, specialistId);
+  const occupiedSlotsCount = daySlots.filter(s => s.isOccupied).length;
+  const freeSlotsCount = daySlots.length - occupiedSlotsCount;
 
   // Auto-fill when selecting an existing client
   const handleSelectClient = (client: Client) => {
@@ -133,6 +152,11 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
 
     if (!selectedService || !selectedSpecialist) {
       alert('Por favor seleccione un servicio y una especialista.');
+      return;
+    }
+
+    if (conflict.hasConflict) {
+      alert(`⚠️ Conflicto de horario:\n\n${conflict.reason}\n\nPara no sobreponer turnos con otro cliente, por favor seleccione un horario libre.`);
       return;
     }
 
@@ -440,12 +464,55 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
           </div>
 
           {/* Section 3: Date, Time & Notes */}
-          <div className="bg-[#18181d] border border-[#27272a] rounded-xl p-4">
-            <label className="block text-xs font-semibold text-[#d4af37] mb-2 uppercase tracking-wider">
-              3. Fecha, Horario y Observaciones
-            </label>
+          <div className="bg-[#18181d] border border-[#27272a] rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-[#d4af37] uppercase tracking-wider">
+                3. Fecha, Horario y Disponibilidad
+              </label>
+              <div className="flex items-center gap-1.5 text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
+                  {freeSlotsCount} libres
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 font-semibold border border-rose-500/20">
+                  {occupiedSlotsCount} ocupados
+                </span>
+              </div>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            {/* Collision Alert Banner */}
+            {conflict.hasConflict && (
+              <div className="p-3 bg-rose-500/15 border border-rose-500/40 rounded-xl animate-in fade-in">
+                <div className="flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-rose-300">
+                      ¡Horario Ocupado por Otro Cliente!
+                    </p>
+                    <p className="text-[11px] text-zinc-300 leading-relaxed">
+                      {conflict.reason}
+                    </p>
+                    <p className="text-[10px] text-rose-200/70">
+                      El sistema protege los turnos para que no se sobrepongan. Selecciona un horario con punto verde.
+                    </p>
+                    {daySlots.find(s => !s.isOccupied) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const firstFree = daySlots.find(s => !s.isOccupied);
+                          if (firstFree) setTime(firstFree.time);
+                        }}
+                        className="mt-1 px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[11px] font-semibold rounded-lg transition-colors inline-flex items-center gap-1 border border-emerald-500/30"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Elegir primer horario libre disponible ({daySlots.find(s => !s.isOccupied)?.time})</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] text-zinc-400 mb-1">Fecha de la Cita</label>
                 <div className="relative">
@@ -467,17 +534,59 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
                   <select
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#27272a] rounded-lg text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                    className={`w-full pl-9 pr-3 py-2 bg-[#121216] border rounded-lg text-xs text-white focus:outline-none ${
+                      conflict.hasConflict ? 'border-rose-500' : 'border-[#27272a] focus:border-[#d4af37]'
+                    }`}
                   >
-                    {[
-                      '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-                      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00',
-                      '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
-                    ].map(t => (
-                      <option key={t} value={t}>{t}</option>
+                    {daySlots.map(slot => (
+                      <option 
+                        key={slot.time} 
+                        value={slot.time}
+                        className={slot.isOccupied ? 'text-rose-400' : 'text-emerald-400'}
+                      >
+                        {slot.time} {slot.isOccupied ? `(🔴 Ocupado: ${slot.clientName})` : '(🟢 Libre)'}
+                      </option>
                     ))}
                   </select>
                 </div>
+              </div>
+            </div>
+
+            {/* Quick interactive slots selector */}
+            <div>
+              <span className="block text-[10.5px] font-medium text-zinc-400 mb-1.5">
+                Cuadrícula Rápida de Horarios ({date}):
+              </span>
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-36 overflow-y-auto p-1.5 bg-[#121216] rounded-xl border border-[#252530]">
+                {daySlots.map(slot => {
+                  const isSelected = time === slot.time;
+                  return (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      onClick={() => setTime(slot.time)}
+                      title={slot.isOccupied ? `Ocupado por ${slot.clientName} (${slot.serviceName})` : 'Horario disponible'}
+                      className={`px-2 py-1.5 rounded-lg text-[11px] font-mono font-semibold transition-all flex flex-col items-center justify-center gap-0.5 border ${
+                        isSelected
+                          ? slot.isOccupied 
+                            ? 'bg-rose-500/20 border-rose-500 text-rose-300 ring-1 ring-rose-500'
+                            : 'bg-[#d4af37] border-[#d4af37] text-black font-bold shadow-md'
+                          : slot.isOccupied
+                            ? 'bg-rose-950/20 border-rose-900/40 text-rose-400/80 hover:border-rose-700'
+                            : 'bg-[#181820] border-[#2a2a36] text-zinc-300 hover:text-white hover:border-[#d4af37]/40'
+                      }`}
+                    >
+                      <span>{slot.time}</span>
+                      <span className="text-[9px] flex items-center gap-1">
+                        {slot.isOccupied ? (
+                          <span className="text-rose-400 font-sans text-[8.5px]">Ocupado</span>
+                        ) : (
+                          <span className="text-emerald-400 font-sans text-[8.5px]">Libre</span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

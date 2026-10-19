@@ -30,6 +30,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { Service, User as SpecialistUser, Client } from '../types';
+import { checkScheduleConflict } from '../utils/schedule';
 
 export const ClientBookingPortal: React.FC = () => {
   const { 
@@ -882,25 +883,47 @@ export const ClientBookingPortal: React.FC = () => {
 
                   {/* Time Slots */}
                   <div className="space-y-3">
-                    <label className="block text-xs font-semibold text-[#d4af37] uppercase tracking-wider">
-                      Horarios Disponibles
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-semibold text-[#d4af37] uppercase tracking-wider">
+                        Horarios Disponibles ({selectedDate})
+                      </label>
+                      <span className="text-[10px] text-zinc-400">
+                        {availableTimeSlots.filter(s => !checkScheduleConflict(appointments, selectedDate, s, selectedService?.durationMin || 45, selectedSpecialistId).hasConflict).length} libres
+                      </span>
+                    </div>
+
                     <div className="grid grid-cols-3 gap-2">
                       {availableTimeSlots.map((slot) => {
                         const isSelected = selectedTime === slot;
+                        const duration = selectedService?.durationMin || 45;
+                        const slotConflict = checkScheduleConflict(
+                          appointments,
+                          selectedDate,
+                          slot,
+                          duration,
+                          selectedSpecialistId
+                        );
+                        const isOccupied = slotConflict.hasConflict;
 
                         return (
                           <button
                             key={slot}
                             type="button"
-                            onClick={() => setSelectedTime(slot)}
-                            className={`py-2.5 rounded-xl text-xs font-mono font-semibold transition-all ${
-                              isSelected
-                                ? 'bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black shadow-md'
-                                : 'bg-[#18181d] text-zinc-300 border border-[#27272a] hover:border-[#d4af37]/40 hover:text-white'
+                            disabled={isOccupied}
+                            onClick={() => !isOccupied && setSelectedTime(slot)}
+                            title={isOccupied ? 'Horario reservado por otro cliente' : 'Disponible para reservar'}
+                            className={`py-2.5 px-2 rounded-xl text-xs font-mono font-semibold transition-all flex flex-col items-center justify-center gap-0.5 border ${
+                              isOccupied
+                                ? 'bg-rose-950/20 border-rose-900/30 text-rose-500/60 cursor-not-allowed line-through'
+                                : isSelected
+                                  ? 'bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black shadow-md border-[#d4af37]'
+                                  : 'bg-[#18181d] text-zinc-300 border border-[#27272a] hover:border-[#d4af37]/40 hover:text-white'
                             }`}
                           >
-                            {slot}
+                            <span>{slot}</span>
+                            <span className="text-[9px] font-sans font-normal">
+                              {isOccupied ? 'Ocupado' : 'Disponible'}
+                            </span>
                           </button>
                         );
                       })}
@@ -910,7 +933,21 @@ export const ClientBookingPortal: React.FC = () => {
 
                 <div className="pt-4 border-t border-[#27272a] flex justify-end">
                   <button
-                    onClick={() => handleSelectDateTime(selectedDate, selectedTime)}
+                    onClick={() => {
+                      const duration = selectedService?.durationMin || 45;
+                      const check = checkScheduleConflict(
+                        appointments,
+                        selectedDate,
+                        selectedTime,
+                        duration,
+                        selectedSpecialistId
+                      );
+                      if (check.hasConflict) {
+                        alert('El horario seleccionado se encuentra ocupado por otro turno. Por favor elija un horario disponible.');
+                        return;
+                      }
+                      handleSelectDateTime(selectedDate, selectedTime);
+                    }}
                     className="px-6 py-2.5 bg-gradient-to-r from-[#d4af37] to-[#aa8421] text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 shadow-md flex items-center gap-1.5"
                   >
                     <span>Continuar con mis Datos</span>

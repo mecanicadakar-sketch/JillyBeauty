@@ -27,6 +27,7 @@ import {
   Tag
 } from 'lucide-react';
 import { Product, ProductCategory } from '../types';
+import { FormattedNumberInput } from './FormattedNumberInput';
 
 export interface InventoryViewProps {
   isAdminPanelMode?: boolean;
@@ -842,19 +843,14 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
                     <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
                       Precio de Venta al Cliente (Gs.) *
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#d4af37] font-bold text-xs">Gs.</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="100"
-                        required={editCategory === 'retail'}
-                        disabled={editCategory === 'cabin'}
-                        value={editCategory === 'cabin' ? editCostPrice : editSalePrice}
-                        onChange={(e) => setEditSalePrice(parseFloat(e.target.value) || 0)}
-                        className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#d4af37]/50 rounded-lg text-sm text-[#fde047] font-mono font-bold focus:outline-none focus:border-[#d4af37] disabled:opacity-50"
-                      />
-                    </div>
+                    <FormattedNumberInput
+                      prefix={<span className="text-[#d4af37] font-bold text-xs">Gs.</span>}
+                      required={editCategory === 'retail'}
+                      disabled={editCategory === 'cabin'}
+                      value={editCategory === 'cabin' ? editCostPrice : editSalePrice}
+                      onChange={(val) => setEditSalePrice(val)}
+                      className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#d4af37]/50 rounded-lg text-sm text-[#fde047] font-mono font-bold focus:outline-none focus:border-[#d4af37] disabled:opacity-50"
+                    />
                     <span className="text-[10px] text-zinc-500 mt-1 block">
                       {editCategory === 'retail' ? 'Precio facturado en caja mostrador' : 'Para insumos de cabina no aplica venta'}
                     </span>
@@ -864,17 +860,12 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
                     <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
                       Costo Unitario de Compra (Gs.)
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">Gs.</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="100"
-                        value={editCostPrice}
-                        onChange={(e) => setEditCostPrice(parseFloat(e.target.value) || 0)}
-                        className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#27272a] rounded-lg text-sm text-zinc-200 font-mono focus:outline-none focus:border-[#d4af37]"
-                      />
-                    </div>
+                    <FormattedNumberInput
+                      prefix={<span className="text-zinc-400 font-bold text-xs">Gs.</span>}
+                      value={editCostPrice}
+                      onChange={(val) => setEditCostPrice(val)}
+                      className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#27272a] rounded-lg text-sm text-zinc-200 font-mono focus:outline-none focus:border-[#d4af37]"
+                    />
                     <span className="text-[10px] text-zinc-500 mt-1 block">
                       Costo de reposición por unidad
                     </span>
@@ -936,22 +927,20 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Existencia / Stock Actual</label>
-                  <input
-                    type="number"
-                    min="0"
+                  <FormattedNumberInput
                     value={editStock}
-                    onChange={(e) => setEditStock(parseInt(e.target.value) || 0)}
+                    min={0}
+                    onChange={(val) => setEditStock(val)}
                     className="w-full px-3 py-2 bg-[#17171e] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Stock Mínimo (Alerta de Reposición)</label>
-                  <input
-                    type="number"
-                    min="1"
+                  <FormattedNumberInput
                     value={editMinStock}
-                    onChange={(e) => setEditMinStock(parseInt(e.target.value) || 1)}
+                    min={1}
+                    onChange={(val) => setEditMinStock(val)}
                     className="w-full px-3 py-2 bg-[#17171e] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
@@ -1080,21 +1069,19 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Stock Inicial</label>
-                  <input
-                    type="number"
-                    min="0"
+                  <FormattedNumberInput
                     value={newStock}
-                    onChange={(e) => setNewStock(parseInt(e.target.value) || 0)}
+                    min={0}
+                    onChange={(val) => setNewStock(val)}
                     className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Stock Mínimo (Alerta)</label>
-                  <input
-                    type="number"
-                    min="1"
+                  <FormattedNumberInput
                     value={newMinStock}
-                    onChange={(e) => setNewMinStock(parseInt(e.target.value) || 1)}
+                    min={1}
+                    onChange={(val) => setNewMinStock(val)}
                     className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
@@ -1103,25 +1090,21 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Costo Unitario (Gs.)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="100"
+                  <FormattedNumberInput
+                    prefix={<span className="text-zinc-400 font-bold text-xs">Gs.</span>}
                     value={newCostPrice}
-                    onChange={(e) => setNewCostPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37]"
+                    onChange={(val) => setNewCostPrice(val)}
+                    className="w-full pl-9 pr-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
                 <div>
                   <label className="block text-[11px] text-zinc-300 mb-1">Precio Venta al Cliente (Gs.)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="100"
+                  <FormattedNumberInput
+                    prefix={<span className="text-[#d4af37] font-bold text-xs">Gs.</span>}
                     disabled={newCategory === 'cabin'}
                     value={newCategory === 'cabin' ? newCostPrice : newSalePrice}
-                    onChange={(e) => setNewSalePrice(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37] disabled:opacity-50"
+                    onChange={(val) => setNewSalePrice(val)}
+                    className="w-full pl-9 pr-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#d4af37] disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -1219,19 +1202,14 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
                     <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
                       Precio de Venta (Gs.) *
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#d4af37] font-bold text-xs">Gs.</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="100"
-                        required={selectedProductForAdjust.category === 'retail'}
-                        disabled={selectedProductForAdjust.category === 'cabin'}
-                        value={selectedProductForAdjust.category === 'cabin' ? adjustCostPrice : adjustSalePrice}
-                        onChange={(e) => setAdjustSalePrice(parseFloat(e.target.value) || 0)}
-                        className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#d4af37]/60 focus:border-[#d4af37] rounded-lg text-sm text-[#fde047] font-mono font-bold focus:outline-none disabled:opacity-50"
-                      />
-                    </div>
+                    <FormattedNumberInput
+                      prefix={<span className="text-[#d4af37] font-bold text-xs">Gs.</span>}
+                      required={selectedProductForAdjust.category === 'retail'}
+                      disabled={selectedProductForAdjust.category === 'cabin'}
+                      value={selectedProductForAdjust.category === 'cabin' ? adjustCostPrice : adjustSalePrice}
+                      onChange={(val) => setAdjustSalePrice(val)}
+                      className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#d4af37]/60 focus:border-[#d4af37] rounded-lg text-sm text-[#fde047] font-mono font-bold focus:outline-none disabled:opacity-50"
+                    />
                     <span className="text-[10px] text-zinc-400 mt-0.5 block">
                       {selectedProductForAdjust.category === 'retail' ? 'Precio al público en caja' : 'Insumo de cabina (sin precio público)'}
                     </span>
@@ -1241,17 +1219,12 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
                     <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
                       Costo Unitario (Gs.)
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">Gs.</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="100"
-                        value={adjustCostPrice}
-                        onChange={(e) => setAdjustCostPrice(parseFloat(e.target.value) || 0)}
-                        className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#27272a] focus:border-[#d4af37] rounded-lg text-sm text-zinc-200 font-mono focus:outline-none"
-                      />
-                    </div>
+                    <FormattedNumberInput
+                      prefix={<span className="text-zinc-400 font-bold text-xs">Gs.</span>}
+                      value={adjustCostPrice}
+                      onChange={(val) => setAdjustCostPrice(val)}
+                      className="w-full pl-9 pr-3 py-2 bg-[#121216] border border-[#27272a] focus:border-[#d4af37] rounded-lg text-sm text-zinc-200 font-mono focus:outline-none"
+                    />
                     <span className="text-[10px] text-zinc-500 mt-0.5 block">
                       Costo de compra o reposición
                     </span>
@@ -1293,12 +1266,11 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
                     <label className="block text-[11px] font-semibold text-amber-300 mb-1">
                       Nuevo Stock Total Exacto ({selectedProductForAdjust.unit})
                     </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
+                    <FormattedNumberInput
                       value={adjustExactStock}
-                      onChange={(e) => setAdjustExactStock(parseInt(e.target.value) || 0)}
+                      min={0}
+                      required
+                      onChange={(val) => setAdjustExactStock(val)}
                       className="w-full px-3 py-2 bg-[#121216] border border-amber-500/60 rounded-lg text-sm font-mono font-bold text-white focus:outline-none focus:border-amber-400"
                     />
                     <span className="text-[10.5px] text-zinc-400 mt-1 block">
@@ -1310,12 +1282,11 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isAdminPanelMode =
                     <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
                       Cantidad a Modificar ({selectedProductForAdjust.unit})
                     </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
+                    <FormattedNumberInput
                       value={adjustDelta}
-                      onChange={(e) => setAdjustDelta(parseInt(e.target.value) || 0)}
+                      min={0}
+                      required
+                      onChange={(val) => setAdjustDelta(val)}
                       className="w-full px-3 py-2 bg-[#121216] border border-[#27272a] rounded-lg text-sm font-mono font-bold text-white focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>

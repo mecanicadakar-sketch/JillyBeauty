@@ -37,6 +37,7 @@ import {
   Lock
 } from 'lucide-react';
 import { Client, ClientTreatmentRecord, Service } from '../types';
+import { FormattedNumberInput } from './FormattedNumberInput';
 
 interface ClientsViewProps {
   onScheduleClient?: (client: Client) => void;
@@ -882,12 +883,12 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
                   <label className="block text-xs font-semibold text-zinc-300 mb-1">
                     Precio Cobrado (Gs.)
                   </label>
-                  <input
-                    type="number"
-                    step="0.01"
+                  <FormattedNumberInput
+                    prefix={<span className="text-[#d4af37] font-bold text-xs">Gs.</span>}
+                    min={0}
                     value={treatmentForm.price}
-                    onChange={(e) => setTreatmentForm({ ...treatmentForm, price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 bg-[#17171e] border border-[#27272a] rounded-xl text-xs text-white font-mono focus:outline-none"
+                    onChange={(val) => setTreatmentForm({ ...treatmentForm, price: val })}
+                    className="w-full pl-9 pr-3 py-2 bg-[#17171e] border border-[#27272a] rounded-xl text-xs text-white font-mono focus:outline-none"
                   />
                 </div>
 

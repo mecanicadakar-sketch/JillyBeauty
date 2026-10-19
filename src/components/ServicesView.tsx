@@ -17,6 +17,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { Service, ServiceCategory } from '../types';
+import { FormattedNumberInput } from './FormattedNumberInput';
 
 interface ServicesViewProps {
   onScheduleService: (service: Service) => void;
@@ -366,35 +367,31 @@ export const ServicesView: React.FC<ServicesViewProps> = ({ onScheduleService })
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-zinc-300 mb-1">Precio (Gs.) *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="0.5"
+                  <FormattedNumberInput
+                    prefix={<span className="text-[#d4af37] font-bold text-xs">Gs.</span>}
+                    min={0}
                     required
                     value={price}
-                    onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#d4af37]"
+                    onChange={(val) => setPrice(val)}
+                    className="w-full pl-9 pr-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs text-zinc-300 mb-1">Duración (min) *</label>
-                  <input
-                    type="number"
-                    min="10"
-                    step="5"
+                  <FormattedNumberInput
+                    min={5}
                     required
                     value={durationMin}
-                    onChange={(e) => setDurationMin(parseInt(e.target.value) || 30)}
+                    onChange={(val) => setDurationMin(val)}
                     className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs text-zinc-300 mb-1">Sesiones Sugeridas</label>
-                  <input
-                    type="number"
-                    min="1"
+                  <FormattedNumberInput
+                    min={1}
                     value={recommendedSessions}
-                    onChange={(e) => setRecommendedSessions(parseInt(e.target.value) || 1)}
+                    onChange={(val) => setRecommendedSessions(val)}
                     className="w-full px-3 py-2 bg-[#18181d] border border-[#27272a] rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
