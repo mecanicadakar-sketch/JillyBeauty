@@ -261,11 +261,13 @@ export const StaffAndUsersView: React.FC = () => {
 
   const handleConfirmDeleteStaff = () => {
     if (!staffToDelete) return;
+    const deletedId = staffToDelete.id;
     const deletedName = staffToDelete.name;
-    deleteStaff(staffToDelete.id);
+    deleteStaff(deletedId);
     setStaffToDelete(null);
-    if (selectedStaffForEdit?.id === staffToDelete.id) {
+    if (selectedStaffForEdit?.id === deletedId) {
       setShowEditStaffModal(false);
+      setSelectedStaffForEdit(null);
     }
     setDeleteSuccessMessage(`✓ Colaborador "${deletedName}" eliminado correctamente del equipo.`);
     setTimeout(() => setDeleteSuccessMessage(''), 4500);
@@ -638,14 +640,25 @@ export const StaffAndUsersView: React.FC = () => {
                         </button>
                       )}
 
-                      {!isCurrent && (
+                      {!isCurrent ? (
                         <button
                           type="button"
                           onClick={() => setStaffToDelete(user)}
-                          className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                          className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-[11px] text-rose-400 hover:text-rose-300 border border-rose-500/30 flex items-center gap-1.5 font-medium transition-colors cursor-pointer"
                           title={`Eliminar colaborador ${user.name}`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Eliminar</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="px-2.5 py-1.5 rounded-lg bg-zinc-800/40 text-zinc-500 border border-zinc-800/60 flex items-center gap-1.5 text-[10px] font-medium cursor-not-allowed opacity-60"
+                          title="Sesión activa: Para eliminar este colaborador, use otro perfil con 'Usar Perfil' primero."
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Eliminar</span>
                         </button>
                       )}
                     </div>
@@ -1218,15 +1231,20 @@ export const StaffAndUsersView: React.FC = () => {
 
               <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-2 pt-3 border-t border-[#27272a]">
                 <div>
-                  {selectedStaffForEdit.id !== currentUser.id && (
+                  {selectedStaffForEdit.id !== currentUser.id ? (
                     <button
                       type="button"
                       onClick={() => setStaffToDelete(selectedStaffForEdit)}
-                      className="w-full sm:w-auto px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                      className="w-full sm:w-auto px-4 py-2 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 border border-rose-500/40 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-sm shadow-rose-950/40"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Eliminar Colaborador</span>
                     </button>
+                  ) : (
+                    <span className="text-[11px] text-zinc-500 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#d4af37]" />
+                      <span>Sesión activa: Para eliminar este colaborador, use otro perfil primero.</span>
+                    </span>
                   )}
                 </div>
 

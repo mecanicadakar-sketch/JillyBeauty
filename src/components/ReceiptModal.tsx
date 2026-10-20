@@ -65,6 +65,13 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           >
             {/* Header */}
             <div className="text-center pb-4 border-b border-dashed border-zinc-300">
+              <div className="flex justify-center mb-2">
+                <img
+                  src="/assets/aistudio/logojillybeautty_712619f5.png"
+                  alt="Jilly Beauty Lab"
+                  className="w-16 h-16 object-contain rounded-full shadow-sm"
+                />
+              </div>
               <h2 className="font-serif font-black text-lg tracking-wider uppercase text-zinc-900">
                 JILLY BEAUTY LAB
               </h2>

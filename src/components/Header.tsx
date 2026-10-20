@@ -66,6 +66,20 @@ export const Header: React.FC = () => {
     }
   };
 
+  const handleGoHome = () => {
+    setActiveTab('appointments');
+    setViewMode('admin');
+    setIsMobileMenuOpen(false);
+    if (typeof window !== 'undefined') {
+      try {
+        window.history.pushState(null, '', '/');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        // Fallback for sandboxed iframe
+      }
+    }
+  };
+
   return (
     <>
       <header className="sticky top-0 z-40 bg-[#09090b]/95 backdrop-blur-md border-b border-[#27272a]/80 shadow-md">
@@ -73,9 +87,13 @@ export const Header: React.FC = () => {
           <div className="flex items-center justify-between h-20 sm:h-22 py-2 gap-3 sm:gap-6">
             {/* Brand Logo & Slogan */}
             <div className="flex items-center gap-4 sm:gap-6 shrink-0">
-              <Logo size="md" showSubtitle={true} />
+              <Logo size="md" showSubtitle={true} onClick={handleGoHome} />
               
-              <div className="hidden 2xl:flex flex-col border-l border-[#27272a] pl-5 py-1">
+              <div 
+                onClick={handleGoHome}
+                className="hidden 2xl:flex flex-col border-l border-[#27272a] pl-5 py-1 cursor-pointer hover:opacity-90 transition-opacity"
+                title="Volver al inicio - Jilly Beauty Lab"
+              >
                 <span className="text-xs text-[#d4af37] font-semibold tracking-wider whitespace-nowrap">
                   Tu belleza, en manos expertas
                 </span>

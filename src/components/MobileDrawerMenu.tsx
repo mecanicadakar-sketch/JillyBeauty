@@ -137,7 +137,18 @@ export const MobileDrawerMenu: React.FC<MobileDrawerMenuProps> = ({ onNewAppoint
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#222228] bg-[#101015]">
-          <Logo size="sm" showSubtitle={true} />
+          <Logo 
+            size="sm" 
+            showSubtitle={true} 
+            onClick={() => {
+              setActiveTab('appointments');
+              setViewMode('admin');
+              setIsMobileMenuOpen(false);
+              if (typeof window !== 'undefined') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }} 
+          />
           
           <button
             onClick={() => setIsMobileMenuOpen(false)}

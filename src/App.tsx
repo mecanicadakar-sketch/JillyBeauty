@@ -158,7 +158,17 @@ const MainContent: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex flex-col items-center md:items-start">
-              <Logo size="sm" showSubtitle={true} />
+              <Logo 
+                size="sm" 
+                showSubtitle={true} 
+                onClick={() => {
+                  setActiveTab('appointments');
+                  setViewMode('admin');
+                  if (typeof window !== 'undefined') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+              />
               <p className="text-[11px] text-zinc-500 mt-2">
                 Tu belleza, en manos expertas ♡ · Tecnología · Calidad · Resultados
               </p>

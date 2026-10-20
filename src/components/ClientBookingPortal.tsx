@@ -126,6 +126,20 @@ export const ClientBookingPortal: React.FC = () => {
     return true;
   });
 
+  const handleResetToPortalHome = () => {
+    setStep(1);
+    setSelectedService(null);
+    setSelectedSpecialistId('any');
+    setServiceCategoryFilter('all');
+    setServiceSearch('');
+    setConfirmedBooking(null);
+    setMatchedClientForHistory(null);
+    setLookupHistorySearched(false);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handleSelectService = (srv: Service) => {
     setSelectedService(srv);
     setStep(2);
@@ -321,13 +335,20 @@ export const ClientBookingPortal: React.FC = () => {
       {/* Top Client Bar */}
       <div className="bg-[#0f0f13] border-b border-[#27272a] px-4 sm:px-6 lg:px-8 py-2.5">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="text-[#d4af37] font-semibold flex items-center gap-1.5">
+          <div 
+            onClick={handleResetToPortalHome}
+            className="flex items-center gap-3 cursor-pointer group"
+            title="Volver al inicio - Jilly Beauty Lab"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleResetToPortalHome(); } }}
+          >
+            <span className="text-[#d4af37] font-semibold flex items-center gap-1.5 group-hover:brightness-110 transition-all">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Portal de Clientes · Jilly Beauty Lab</span>
             </span>
             <span className="hidden sm:inline text-zinc-500">|</span>
-            <span className="hidden sm:inline text-zinc-400">
+            <span className="hidden sm:inline text-zinc-400 group-hover:text-zinc-200 transition-colors">
               Turnos Online & Ficha Personal de Tratamientos
             </span>
           </div>
@@ -362,16 +383,32 @@ export const ClientBookingPortal: React.FC = () => {
           <div className="max-w-3xl mx-auto text-center">
             {/* Center Logo */}
             <div className="flex justify-center mb-4">
-              <Logo size="lg" showSubtitle={false} className="drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />
+              <Logo 
+                size="lg" 
+                showSubtitle={false} 
+                onClick={handleResetToPortalHome}
+                className="drop-shadow-[0_0_20px_rgba(212,175,55,0.4)] cursor-pointer" 
+              />
             </div>
 
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/50 text-[#fde047] text-xs font-semibold tracking-widest uppercase mb-4">
+            <div 
+              onClick={handleResetToPortalHome}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/50 text-[#fde047] text-xs font-semibold tracking-widest uppercase mb-4 cursor-pointer hover:bg-[#d4af37]/25 transition-all select-none"
+              title="Volver al inicio"
+            >
               <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
               <span>Tu belleza, en manos expertas</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white font-serif-luxury tracking-tight leading-tight px-2">
-              Portal de Clientes <span className="text-gold-gradient block sm:inline mt-1 sm:mt-0 drop-shadow-[0_2px_12px_rgba(212,175,55,0.3)]">Jilly Beauty Lab</span>
+            <h1 
+              onClick={handleResetToPortalHome}
+              className="text-2xl sm:text-4xl md:text-5xl font-black text-white font-serif-luxury tracking-tight leading-tight px-2 cursor-pointer group hover:opacity-95 transition-all select-none"
+              title="Volver al inicio de turnos online"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleResetToPortalHome(); } }}
+            >
+              Portal de Clientes <span className="text-gold-gradient block sm:inline mt-1 sm:mt-0 drop-shadow-[0_2px_12px_rgba(212,175,55,0.3)] group-hover:brightness-110">Jilly Beauty Lab</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-zinc-300 mt-3 leading-relaxed max-w-2xl mx-auto">
