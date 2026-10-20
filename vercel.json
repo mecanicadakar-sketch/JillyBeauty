@@ -1,6 +1,19 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "rewrites": [
+    {
+      "source": "/clientes",
+      "destination": "/clientes.html"
+    },
+    {
+      "source": "/clientes/",
+      "destination": "/clientes.html"
+    },
+    {
+      "source": "/clientes/(.*)",
+      "destination": "/clientes.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
