@@ -156,18 +156,69 @@ html, body {
 
 /* Print Ticket Styles */
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    size: 80mm auto;
+    margin: 4mm 2mm;
   }
-  #printable-ticket, #printable-ticket * {
-    visibility: visible;
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
+
+  /* Hide app navigation, headers, backgrounds, and non-printable elements */
+  nav, header, footer, .no-print, button, [role="button"] {
+    display: none !important;
+  }
+
+  /* Unclip modal wrappers so nothing gets cut off */
+  .fixed.inset-0 {
+    position: static !important;
+    overflow: visible !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .max-w-md, .overflow-hidden, .overflow-y-auto, .bg-\[\#121216\], .bg-\[\#0a0a0c\] {
+    max-width: 100% !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
   #printable-ticket {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 80mm;
-    color: #000 !important;
-    background: #fff !important;
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 78mm !important;
+    margin: 0 auto !important;
+    padding: 2mm !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    visibility: visible !important;
+    page-break-inside: avoid;
+  }
+
+  #printable-ticket * {
+    visibility: visible !important;
+    color: #000000 !important;
+    background: transparent !important;
   }
 }

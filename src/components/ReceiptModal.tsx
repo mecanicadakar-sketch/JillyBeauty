@@ -9,6 +9,122 @@ interface ReceiptModalProps {
 
 export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => {
   const handlePrint = () => {
+    const printableElement = document.getElementById('printable-ticket');
+    if (!printableElement) {
+      window.print();
+      return;
+    }
+
+    try {
+      let iframe = document.getElementById('receipt-print-frame') as HTMLIFrameElement;
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'receipt-print-frame';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+      }
+
+      const doc = iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(`
+          <!DOCTYPE html>
+          <html lang="es">
+            <head>
+              <meta charset="utf-8">
+              <title>Ticket ${sale.ticketNumber}</title>
+              <style>
+                @page {
+                  size: 80mm auto;
+                  margin: 4mm 2mm;
+                }
+                * {
+                  box-sizing: border-box;
+                  margin: 0;
+                  padding: 0;
+                  font-family: 'Courier New', Courier, monospace, monospace;
+                  color: #000000 !important;
+                  background: transparent !important;
+                }
+                body {
+                  width: 100%;
+                  max-width: 76mm;
+                  margin: 0 auto;
+                  padding: 2mm 0;
+                  font-size: 11px;
+                  line-height: 1.35;
+                  color: #000000 !important;
+                  background: #ffffff !important;
+                }
+                img {
+                  max-width: 58px;
+                  height: auto;
+                  display: block;
+                  margin: 0 auto 6px auto;
+                  border-radius: 50%;
+                }
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+                .font-bold { font-weight: bold; }
+                .font-black { font-weight: 900; }
+                .font-medium { font-weight: 600; }
+                .uppercase { text-transform: uppercase; }
+                .border-b { border-bottom: 1px dashed #333333; }
+                .border-t { border-top: 1px dashed #333333; }
+                .border-dashed { border-style: dashed; }
+                .border-zinc-300 { border-color: #555555; }
+                .border-zinc-200 { border-color: #000000; }
+                .py-3 { padding-top: 7px; padding-bottom: 7px; }
+                .py-2 { padding-top: 5px; padding-bottom: 5px; }
+                .py-2\\.5 { padding-top: 6px; padding-bottom: 6px; }
+                .pb-4 { padding-bottom: 9px; }
+                .pt-4 { padding-top: 9px; }
+                .pt-1 { padding-top: 4px; }
+                .mb-2 { margin-bottom: 5px; }
+                .mt-1 { margin-top: 3px; }
+                .mt-0\\.5 { margin-top: 2px; }
+                .pr-2 { padding-right: 6px; }
+                .space-y-1 > * + * { margin-top: 3px; }
+                .space-y-2 > * + * { margin-top: 6px; }
+                .space-y-0\\.5 > * + * { margin-top: 2px; }
+                .flex { display: flex; }
+                .justify-between { justify-content: space-between; }
+                .justify-center { justify-content: center; }
+                .text-\\[11px\\] { font-size: 11px; }
+                .text-\\[10px\\] { font-size: 10px; }
+                .text-\\[9px\\] { font-size: 9px; }
+                .text-xs { font-size: 11px; }
+                .text-base { font-size: 13px; }
+                .text-lg { font-size: 14px; }
+                .tracking-wider { letter-spacing: 0.05em; }
+                .tracking-widest { letter-spacing: 0.1em; }
+                .font-serif { font-family: Georgia, serif; }
+              </style>
+            </head>
+            <body>
+              <div id="printable-ticket">
+                ${printableElement.innerHTML}
+              </div>
+            </body>
+          </html>
+        `);
+        doc.close();
+
+        setTimeout(() => {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        }, 300);
+        return;
+      }
+    } catch (err) {
+      console.warn('Iframe print fallback to window.print', err);
+    }
+
     window.print();
   };
 
@@ -27,10 +143,18 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
     }
   };
 
-  const formattedDate = new Date(sale.date).toLocaleString('es-EC', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
+  const formattedDate = (() => {
+    try {
+      const d = new Date(sale.date);
+      if (isNaN(d.getTime())) return sale.date;
+      return d.toLocaleString('es-PY', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    } catch {
+      return sale.date;
+    }
+  })();
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
